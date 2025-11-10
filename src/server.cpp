@@ -6,7 +6,7 @@
 /*   By: phhofman <phhofman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/07 15:11:45 by phhofman          #+#    #+#             */
-/*   Updated: 2025/11/07 15:49:55 by phhofman         ###   ########.fr       */
+/*   Updated: 2025/11/10 09:58:26 by phhofman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,5 @@ int main(void)
     }
 
     close(socket_fd);
-    return 0;
     return 0;
 }
