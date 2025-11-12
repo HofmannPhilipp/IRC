@@ -6,7 +6,7 @@
 /*   By: phhofman <phhofman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/07 15:11:45 by phhofman          #+#    #+#             */
-/*   Updated: 2025/11/11 17:04:51 by phhofman         ###   ########.fr       */
+/*   Updated: 2025/11/12 14:05:17 by phhofman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 #include <vector>
 #include <fcntl.h>
 #include <poll.h>
+
+#include "User.hpp"
 
 int main(void)
 {
@@ -53,6 +55,7 @@ int main(void)
     std::cout << "server runnning on port 6667...\n";
 
     std::vector<pollfd> fds;
+    std::vector<User> users;
 
     fds.push_back({server_fd, POLLIN, 0});
     while (true)
@@ -83,8 +86,13 @@ int main(void)
                 else
                 {
                     buffer[n] = '\0';
-                    std::cout << "Client: " << buffer << "\n";
-                    send(fds[i].fd, buffer, n, 0); // Echo
+                    std::string msg(buffer);
+                    if (msg == "CAP LS")
+                    {
+                        send(fds[i].fd, ":irc.34 CAP * LS :\r\n", 23, 0); // no CAP features
+                    }
+                    std::cout << "Client: " << msg << "\n";
+                    send(fds[i].fd, ":irc.34 001 nickname :Welcome to the irc chat, nickname!\r\n", 58, 0);
                 }
             }
         }
