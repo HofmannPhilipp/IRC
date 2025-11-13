@@ -6,7 +6,7 @@
 /*   By: phhofman <phhofman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/07 15:11:45 by phhofman          #+#    #+#             */
-/*   Updated: 2025/11/12 14:05:17 by phhofman         ###   ########.fr       */
+/*   Updated: 2025/11/13 10:59:23 by phhofman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ int main(void)
     fds.push_back({server_fd, POLLIN, 0});
     while (true)
     {
-        poll(fds.data(), fds.size(), -1);
+        poll(fds.data(), fds.size(), -1); // -1 blocking
         if (fds[0].revents & POLLIN)
         {
             int client_fd = accept(server_fd, nullptr, nullptr);
@@ -87,12 +87,15 @@ int main(void)
                 {
                     buffer[n] = '\0';
                     std::string msg(buffer);
+                    std::cout << "Client: " << msg << "\n";
                     if (msg == "CAP LS")
                     {
                         send(fds[i].fd, ":irc.34 CAP * LS :\r\n", 23, 0); // no CAP features
+                        send(fds[i].fd, ":irc.34 001 nickname :Welcome to the irc chat, nickname!\r\n", 58, 0);
                     }
-                    std::cout << "Client: " << msg << "\n";
-                    send(fds[i].fd, ":irc.34 001 nickname :Welcome to the irc chat, nickname!\r\n", 58, 0);
+                    if (msg == "NICK jofmann")
+                    {
+                    }
                 }
             }
         }
