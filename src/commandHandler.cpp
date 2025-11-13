@@ -1,9 +1,7 @@
-#include <string>
-#include <sstream>
-#include <vector>
+#include "commandFunctions.hpp"
 
-// /NICK Chris xyz
-void commandHandler(std::string msg) //+ welcher user/client
+// /NICK Chris
+void commandHandler(User &user, std::string msg) //+ welcher user/client
 {
     std::stringstream ss(msg);
     std::vector<std::string> arg;
@@ -15,39 +13,35 @@ void commandHandler(std::string msg) //+ welcher user/client
 
     if (arg[0] == "CAP LS")
     {
-        //send.msg
+        //macht Philipp
     }
     else if (arg[0] == "PASS")
     {
-        // handlepass(Client &client, const std::vector<std::string> &args);
+        handlePass(user, arg);
     }
     else if (arg[0] == "NICK")
     {
-        //handlenick
+        handleNick(user, arg);
     }
     else if (arg[0] == "USER")
     {
-
+        handleUser(user, arg);          
     }
     else if (arg[0] == "OPER")
     {
-
+        handleOper(user, arg);
     }
     else if (arg[0] == "MODE")
     {
-
-    }
-    else if (arg[0] == "NICK")
-    {
-
+        handleMode(user, arg);
     }
     else if (arg[0] == "QUIT")
     {
-
+        handleQuit(user, arg);
     }
     else if (arg[0] == "JOIN")
     {
-
+        handleJoin(user, arg);
     }
     else if (arg[0] == "TOPIC")
     {
