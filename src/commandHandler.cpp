@@ -2,23 +2,28 @@
 #include <sstream>
 #include <vector>
 
-//NICK Chris
+// /NICK Chris xyz
 void commandHandler(std::string msg) //+ welcher user/client
 {
     std::stringstream ss(msg);
     std::vector<std::string> arg;
-    while (ss >> msg)
+    std::string word;
+    while (ss >> word)
     {
-        arg.push_back(msg);
+        arg.push_back(word); //["NICK", "Chris", "xyz"]
     }
 
-    if (arg[0] == "PASS")
+    if (arg[0] == "CAP LS")
     {
-
+        //send.msg
+    }
+    else if (arg[0] == "PASS")
+    {
+        // handlepass(Client &client, const std::vector<std::string> &args);
     }
     else if (arg[0] == "NICK")
     {
-            //handlenick
+        //handlenick
     }
     else if (arg[0] == "USER")
     {
