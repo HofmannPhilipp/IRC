@@ -13,3 +13,6 @@ void handleOper(User &user, const std::vector<std::string> &args);
 void handleMode(User &user, const std::vector<std::string> &args);
 void handleQuit(User &user, const std::vector<std::string> &args);
 void handleJoin(User &user, const std::vector<std::string> &args);
+void handleTopic(User &user, const std::vector<std::string> &args);
+void handleKick(User &user, const std::vector<std::string> &args);
+void privMsg(User &user, const std::vector<std::string> &args);

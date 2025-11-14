@@ -45,19 +45,19 @@ void commandHandler(User &user, std::string msg) //+ welcher user/client
     }
     else if (arg[0] == "TOPIC")
     {
-
+        handleTopic(user, arg);
     }
     else if (arg[0] == "KICK")
     {
-
+        handleKick(user, arg);
     }
     else if (arg[0] == "PRIVMSG")
     {
-
+        privMsg(user, arg);
     }
     else if (arg[0] == "NOTICE")
     {
-
+        
     }
     else
     {

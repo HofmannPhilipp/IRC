@@ -54,3 +54,42 @@ void handleJoin(User &user, const std::vector<std::string> &args)
     //boradcast join
 
 }
+
+void handleTopic(User &user, const std::vector<std::string> &args)
+{
+    //arg muss groeser gleich 2 sein 
+    // arg[1] = channel name
+    //get channel object if not available return 
+    //if arg == 2 
+    //-> braodcast channel name or no channel topic if nothing set yet
+    //if arg == 3 topic setzen (in channel struct) ((setter und getter func benutzen))
+
+}
+
+void handleKick(User &user, const std::vector<std::string> &args)
+{
+    //arg muss groesser gleich 3 sein
+    //arg[1] channel name
+    //arg[2] targetUser
+    //get Channel if not return 
+    //check if user (which want to kick) in channel isMember()
+    //check if User is operaator in channel
+    //getUser (target)
+    //chekc if target is in channel
+    //Grund zusammensetzen mit arg 3, etc falls mehr args
+    //Target aus Channel entfernen 
+}
+
+void privMsg(User &user, const std::vector<std::string> &args)
+{
+    //arg muss groesser gleich 3 sein
+    //arg[1] channel name
+    //arg[2] targetUser
+    //get Channel if not return 
+    //check if user (which want to kick) in channel isMember()
+    //check if User is operaator in channel
+    //getUser (target)
+    //chekc if target is in channel
+    //Grund zusammensetzen mit arg 3, etc falls mehr args
+    //Target aus Channel entfernen 
+}
