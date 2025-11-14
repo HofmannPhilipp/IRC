@@ -1,7 +1,7 @@
 #include "commandFunctions.hpp"
 
 // /NICK Chris
-void commandHandler(User &user, std::string msg) //+ welcher user/client
+void commandHandler(Client &client, std::string msg) //+ welcher client/client
 {
     std::stringstream ss(msg);
     std::vector<std::string> arg;
@@ -13,54 +13,53 @@ void commandHandler(User &user, std::string msg) //+ welcher user/client
 
     if (arg[0] == "CAP LS")
     {
-        //macht Philipp
+        // macht Philipp
     }
     else if (arg[0] == "PASS")
     {
-        handlePass(user, arg);
+        handlePass(client, arg);
     }
     else if (arg[0] == "NICK")
     {
-        handleNick(user, arg);
+        handleNick(client, arg);
     }
     else if (arg[0] == "USER")
     {
-        handleUser(user, arg);          
+        handleClient(client, arg);
     }
     else if (arg[0] == "OPER")
     {
-        handleOper(user, arg);
+        handleOper(client, arg);
     }
     else if (arg[0] == "MODE")
     {
-        handleMode(user, arg);
+        handleMode(client, arg);
     }
     else if (arg[0] == "QUIT")
     {
-        handleQuit(user, arg);
+        handleQuit(client, arg);
     }
     else if (arg[0] == "JOIN")
     {
-        handleJoin(user, arg);
+        handleJoin(client, arg);
     }
     else if (arg[0] == "TOPIC")
     {
-        handleTopic(user, arg);
+        handleTopic(client, arg);
     }
     else if (arg[0] == "KICK")
     {
-        handleKick(user, arg);
+        handleKick(client, arg);
     }
     else if (arg[0] == "PRIVMSG")
     {
-        privMsg(user, arg);
+        privMsg(client, arg);
     }
     else if (arg[0] == "NOTICE")
     {
-        
     }
     else
     {
-        //philipp sagen, dass falscher cmd 
+        // philipp sagen, dass falscher cmd
     }
 }

@@ -1,119 +1,117 @@
 #include "commandFunctions.hpp"
-#include "User.hpp"
+#include "Client.hpp"
 
-void handlePass(User &user, const std::vector<std::string> &args)
+void handlePass(Client &client, const std::vector<std::string> &args)
 {
-    if (user.isRegistered())
+    if (client.get_registered())
     {
-        user.sendMessage("462 :You may not reregister");
+        client.sendMessage("462 :You may not reregister");
         return;
     }
     if (args.size() < 2)
     {
-        user.sendMessage("461 PASS :Not enough parameters");
+        client.sendMessage("461 PASS :Not enough parameters");
         return;
     }
     std::string pass = args[1];
 
-    //if (pass != server.getPass())
+    // if (pass != server.getPass())
     //{
-    //  user.sendMessage("464 :Password incorrect");
-    //  return;
-    //}
+    //   client.sendMessage("464 :Password incorrect");
+    //   return;
+    // }
 
-    //noch nicht registriert, da Nick noch nicht gesetzt 
+    // noch nicht registriert, da Nick noch nicht gesetzt
 }
 
-void handleNick(User &user, const std::vector<std::string> &args)
+void handleNick(Client &client, const std::vector<std::string> &args)
 {
     if (args.size() < 2)
     {
-        user.sendMessage("431 :No nickname given");
+        client.sendMessage("431 :No nickname given");
         return;
     }
     // if (!checkNickname(args[1]))
     // {
-    //     user.sendMessage("432 :Erroneous nickname");
+    //     client.sendMessage("432 :Erroneous nickname");
     //     return;
     // }
-    //checken ob Name bereits vergeben ist bei allen Usern in Server
-    //wenn ok, nickname setten fuer user
+    // checken ob Name bereits vergeben ist bei allen Usern in Server
+    // wenn ok, nickname setten fuer client
 }
 
-void handleUser(User &user, const std::vector<std::string> &args)
+void handleUser(Client &client, const std::vector<std::string> &args)
 {
-    //USER <username> <hostname> <servername> :<realname>
-    //check ich nciht
+    // USER <username> <hostname> <servername> :<realname>
+    // check ich nciht
 }
 
-void handleOper(User &user, const std::vector<std::string> &args)
+void handleOper(Client &client, const std::vector<std::string> &args)
 {
-    //OPER <username> <password>
-    //checken ob 3 in arg
-    //checken ob User uebrhaupt exestiert
-    //checken ob Operator PW uebereinstimmt
-    //User zu Operator setten
-    //msg senden
+    // OPER <username> <password>
+    // checken ob 3 in arg
+    // checken ob Client uebrhaupt exestiert
+    // checken ob Operator PW uebereinstimmt
+    // Client zu Operator setten
+    // msg senden
 }
 
-void handleMode(User &user, const std::vector<std::string> &args)
+void handleMode(Client &client, const std::vector<std::string> &args)
 {
-    //MODE <channel> <modes> [parameters]
-    //kein plan
+    // MODE <channel> <modes> [parameters]
+    // kein plan
 }
 
-void handleQuit(User &user, const std::vector<std::string> &args)
+void handleQuit(Client &client, const std::vector<std::string> &args)
 {
-    //braodcast to channel
-    //remove User from channel
-    //disconnect User
+    // braodcast to channel
+    // remove Client from channel
+    // disconnect Client
 }
 
-void handleJoin(User &user, const std::vector<std::string> &args)
+void handleJoin(Client &client, const std::vector<std::string> &args)
 {
-    //check ob arg groesser als 2 
-    //channle name muss mit # anfangen?
-    //get Channel class falls nein erstelle neuen Channel als class
-    //add user to channel
-    //boradcast join
-
+    // check ob arg groesser als 2
+    // channle name muss mit # anfangen?
+    // get Channel class falls nein erstelle neuen Channel als class
+    // add client to channel
+    // boradcast join
 }
 
-void handleTopic(User &user, const std::vector<std::string> &args)
+void handleTopic(Client &client, const std::vector<std::string> &args)
 {
-    //arg muss groeser gleich 2 sein 
-    // arg[1] = channel name
-    //get channel object if not available return 
-    //if arg == 2 
+    // arg muss groeser gleich 2 sein
+    //  arg[1] = channel name
+    // get channel object if not available return
+    // if arg == 2
     //-> braodcast channel name or no channel topic if nothing set yet
-    //if arg == 3 topic setzen (in channel struct) ((setter und getter func benutzen))
-
+    // if arg == 3 topic setzen (in channel struct) ((setter und getter func benutzen))
 }
 
-void handleKick(User &user, const std::vector<std::string> &args)
+void handleKick(Client &client, const std::vector<std::string> &args)
 {
-    //arg muss groesser gleich 3 sein
-    //arg[1] channel name
-    //arg[2] targetUser
-    //get Channel if not return 
-    //check if user (which want to kick) in channel isMember()
-    //check if User is operaator in channel
-    //getUser (target)
-    //chekc if target is in channel
-    //Grund zusammensetzen mit arg 3, etc falls mehr args
-    //Target aus Channel entfernen 
+    // arg muss groesser gleich 3 sein
+    // arg[1] channel name
+    // arg[2] targetUser
+    // get Channel if not return
+    // check if client (which want to kick) in channel isMember()
+    // check if Client is operaator in channel
+    // getUser (target)
+    // chekc if target is in channel
+    // Grund zusammensetzen mit arg 3, etc falls mehr args
+    // Target aus Channel entfernen
 }
 
-void privMsg(User &user, const std::vector<std::string> &args)
+void privMsg(Client &client, const std::vector<std::string> &args)
 {
-    //arg muss groesser gleich 3 sein
-    //arg[1] channel name
-    //arg[2] targetUser
-    //get Channel if not return 
-    //check if user (which want to kick) in channel isMember()
-    //check if User is operaator in channel
-    //getUser (target)
-    //chekc if target is in channel
-    //Grund zusammensetzen mit arg 3, etc falls mehr args
-    //Target aus Channel entfernen 
+    // arg muss groesser gleich 3 sein
+    // arg[1] channel name
+    // arg[2] targetUser
+    // get Channel if not return
+    // check if client (which want to kick) in channel isMember()
+    // check if Client is operaator in channel
+    // getUser (target)
+    // chekc if target is in channel
+    // Grund zusammensetzen mit arg 3, etc falls mehr args
+    // Target aus Channel entfernen
 }
