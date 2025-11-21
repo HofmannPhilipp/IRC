@@ -89,22 +89,32 @@ void Server::run()
                     continue;
                 }
                 buffer[n] = '\0';
-                std::string msg(buffer);
-                std::cout << "Client: " << msg << "\n";
-                if (msg == "CAP LS\r\n")
+                try
                 {
-                    send(_client_fds[i].fd, ":irc.34 CAP * LS :\r\n", 23, 0); // no CAP features
-                    // send(_client_fds[i].fd, ":irc.34 001 nickname :Welcome to the irc chat, nickname!\r\n", 58, 0);
+                    std::string msg(buffer);
+                    std::cout << "Client: " << msg << "\n";
+                    RequestMsg request(msg);
+                    if (request.get_cmd() == IRC_CAP)
+                    {
+                        std::string response = ":irc.34 CAP * LS :\r\n";
+                        send(_client_fds[i].fd, response.c_str(), response.size(), 0);
+                        // TODO: TEST
+                    }
                 }
-                if (msg == "PASS abcdef")
+                catch (const std::exception &e)
                 {
-                    send(_client_fds[i].fd, "HALLO!\n", 8, 0);
+                    std::cerr << e.what() << '\n';
                 }
-                if (!_clients[i].get_registered())
-                {
-                    std::string msg(":irc.34 NOTICE * :Password required. Use: PASS <password>\r\n");
-                    send(_client_fds[i].fd, ":irc.34 NOTICE * :Password required. Use: PASS <password>\r\n", msg.size(), 0);
-                }
+
+                // if (msg == "PASS abcdef")
+                // {
+                //     send(_client_fds[i].fd, "HALLO!\n", 8, 0);
+                // }
+                // if (!_clients[i].get_registered())
+                // {
+                //     std::string msg(":irc.34 NOTICE * :Password required. Use: PASS <password>\r\n");
+                //     send(_client_fds[i].fd, ":irc.34 NOTICE * :Password required. Use: PASS <password>\r\n", msg.size(), 0);
+                // }
             }
         }
     }

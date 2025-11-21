@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Client.hpp"
+#include "RequestMsg.hpp"
 
 #include <iostream>
 #include <string>
