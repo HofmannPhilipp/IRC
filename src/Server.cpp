@@ -110,3 +110,25 @@ void Server::run()
     }
     close(_server_fd);
 }
+
+std::string Server::getPassword()
+{
+    return _password;
+}
+
+void Server::setPassword(std::string pass)
+{
+    _password = pass;
+}
+
+bool Server::isNickAvailable(const std::string &nick)
+{
+    std::string usedNick;
+
+    for (auto it = _clients.begin(); it != _clients.end(); it++)
+    {
+        if (it->getNickname() == nick)
+            return false;
+    }
+    return true;
+}

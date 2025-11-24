@@ -6,8 +6,8 @@
 
 // Commands
 
-void handlePass(Client &client, const std::vector<std::string> &args);
-void handleNick(Client &client, const std::vector<std::string> &args);
+void handlePass(Server &server, Client &client, const std::vector<std::string> &args);
+void handleNick(Server &server, Client &client, const std::vector<std::string> &args);
 void handleClient(Client &client, const std::vector<std::string> &args);
 void handleOper(Client &client, const std::vector<std::string> &args);
 void handleMode(Client &client, const std::vector<std::string> &args);

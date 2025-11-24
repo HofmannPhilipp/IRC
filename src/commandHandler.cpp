@@ -1,7 +1,8 @@
 #include "commandFunctions.hpp"
+#include "Server.hpp"
 
 // /NICK Chris
-void commandHandler(Client &client, std::string msg) //+ welcher client/client
+void commandHandler(Server &server, Client &client, std::string msg) //+ welcher client/client
 {
     std::stringstream ss(msg);
     std::vector<std::string> arg;
@@ -17,11 +18,11 @@ void commandHandler(Client &client, std::string msg) //+ welcher client/client
     }
     else if (arg[0] == "PASS")
     {
-        handlePass(client, arg);
+        handlePass(server, client, arg);
     }
     else if (arg[0] == "NICK")
     {
-        handleNick(client, arg);
+        handleNick(server, client, arg);
     }
     else if (arg[0] == "USER")
     {

@@ -41,4 +41,8 @@ public:
 
     void init(int domain);
     void run();
+
+    std::string getPassword();
+    void setPassword(std::string pass);
+    bool isNickAvailable(const std::string &nick);
 };
