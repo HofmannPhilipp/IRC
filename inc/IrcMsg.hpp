@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <ostream>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -33,42 +35,48 @@ static const std::array<std::string, 12> IRC_COMMANDS = {
     IRC_PRIVMSG,
     IRC_NOTICE};
 
-class RequestMsg
+class IrcMsg
 {
 private:
-    std::string _prefix_param;
+    std::string _prefix;
     std::string _cmd;
     std::vector<std::string> _params;
     std::string _org_msg;
 
 public:
-    class RequestMsgException : public std::exception
+    class IrcMsgException : public std::exception
     {
     private:
         std::string _message;
 
     public:
-        RequestMsgException(const std::string &msg) : _message(msg) {}
+        IrcMsgException(const std::string &msg) : _message(msg) {}
         const char *what() const noexcept override { return _message.c_str(); }
     };
 
-    class InvalidCommand : public RequestMsgException
+    class InvalidCommand : public IrcMsgException
     {
     public:
-        InvalidCommand() : RequestMsgException("Invalid IRC Command") {}
+        InvalidCommand() : IrcMsgException("Invalid IRC Command") {}
     };
 
-    class TooManyParams : public RequestMsgException
+    class TooManyParams : public IrcMsgException
     {
     public:
-        TooManyParams() : RequestMsgException("Too many parameters in IRC message") {}
+        TooManyParams() : IrcMsgException("Too many parameters in IRC message") {}
     };
 
-    RequestMsg();
-    RequestMsg(std::string msg);
-    RequestMsg(const RequestMsg &other);
-    RequestMsg &operator=(const RequestMsg &other);
-    ~RequestMsg();
+    IrcMsg();
+    IrcMsg(std::string msg);
+    IrcMsg(const IrcMsg &other);
+    IrcMsg &operator=(const IrcMsg &other);
+    ~IrcMsg();
 
-    std::string get_cmd(void);
+    void create(const std::string &msg);
+    std::string get_cmd(void) const;
+    std::string get_msg(void) const;
+    std::vector<std::string> get_params(void) const;
+    std::string get_prefix(void) const;
 };
+
+std::ostream &operator<<(std::ostream &os, const IrcMsg &msg);

@@ -26,8 +26,8 @@ bool Client::get_registered()
     return _registered;
 }
 
-void Client::sendMessage(const std::string &msg)
+void Client::sendMessage(const IrcMsg &msg)
 {
-    std::string formatted = msg + "\r\n";
-    send(_fd, formatted.c_str(), formatted.size(), 0);
+    (void)msg;
+    // send(_fd, , formatted.size(), 0);
 }

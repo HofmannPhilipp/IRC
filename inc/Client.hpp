@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "IrcMsg.hpp"
 #include <poll.h>
 #include <string>
 #include <sys/types.h>
@@ -22,5 +23,5 @@ public:
     ~Client();
 
     bool get_registered();
-    void sendMessage(const std::string &msg);
+    void sendMessage(const IrcMsg &msg);
 };

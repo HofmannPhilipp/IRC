@@ -78,8 +78,21 @@ void Server::run()
             if (_client_fds[i].revents & POLLIN)
             {
                 char buffer[1024];
-                int n = recv(_client_fds[i].fd, buffer, sizeof(buffer) - 1, 0);
-                if (n <= 0)
+                ssize_t bytes_recvd;
+                // while ((bytes_recvd = recv(_client_fds[i].fd, buffer, sizeof(buffer) - 1, 0)) > 0)
+                // {
+                //     buffer[bytes_recvd] = '\0';
+                //     std::string tmp(buffer);
+                //     size_t pos;
+                //     pos = tmp.find("\r\n");
+                //     if (pos != std::string::npos)
+                //     {
+                //         msg = msg + tmp.substr(pos + 2);
+                //     }
+                //     msg = msg + tmp;
+                // }
+                bytes_recvd = recv(_client_fds[i].fd, buffer, sizeof(buffer) - 1, 0);
+                if (bytes_recvd <= 0)
                 {
                     std::cout << "Client disconnected!\n";
                     close(_client_fds[i].fd);
@@ -88,22 +101,26 @@ void Server::run()
                     i--;
                     continue;
                 }
-                buffer[n] = '\0';
+                buffer[bytes_recvd] = '\0';
+                std::string msg(buffer);
+                std::cout << "Client: " << msg << "\n";
+                IrcMsg request;
                 try
                 {
-                    std::string msg(buffer);
-                    std::cout << "Client: " << msg << "\n";
-                    RequestMsg request(msg);
-                    if (request.get_cmd() == IRC_CAP)
-                    {
-                        std::string response = ":irc.34 CAP * LS :\r\n";
-                        send(_client_fds[i].fd, response.c_str(), response.size(), 0);
-                        // TODO: TEST
-                    }
+                    request.create(buffer);
+                    std::cout << request << std::endl;
                 }
-                catch (const std::exception &e)
+                catch (const IrcMsg::IrcMsgException &e)
                 {
                     std::cerr << e.what() << '\n';
+                }
+                if (request.get_cmd() == IRC_CAP)
+                {
+                    std::cout << "Send to client\n";
+                    // _clients[i].sendMessage()
+                    IrcMsg response(":irc.34 CAP * LS :\r\n");
+                    send(_client_fds[i].fd, response.get_msg().c_str(), response.get_msg().size(), 0);
+                    // TODO: TEST
                 }
 
                 // if (msg == "PASS abcdef")

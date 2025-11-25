@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Client.hpp"
-#include "RequestMsg.hpp"
+#include "IrcMsg.hpp"
 
 #include <iostream>
 #include <string>
