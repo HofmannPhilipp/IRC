@@ -21,8 +21,8 @@ private:
     int _port;
     std::string _password;
     int _server_fd;
-    std::vector<pollfd> _client_fds{};
     std::vector<Client> _clients;
+    std::vector<pollfd> _poll_fds;
 
 public:
     class ServerException : public std::exception
@@ -42,4 +42,7 @@ public:
 
     void init(int domain);
     void run();
+    // void handle_msg(std::string msg);
+    void handle_request(const Client &client, const IrcMsg &request);
+    void send_response(const Client &client, const IrcMsg &response);
 };

@@ -21,13 +21,27 @@ Client &Client::operator=(const Client &other)
 
 Client::~Client() {}
 
-bool Client::get_registered()
+int Client::get_fd() const
+{
+    return _fd;
+}
+
+std::string Client::get_nickname() const
+{
+    return _nickname;
+}
+
+bool Client::get_registered() const
 {
     return _registered;
 }
 
-void Client::sendMessage(const IrcMsg &msg)
+void Client::set_nickname(const std::string &nickname)
 {
-    (void)msg;
-    // send(_fd, , formatted.size(), 0);
+    _nickname = nickname;
+}
+
+void Client::sendMessage(const IrcMsg &response)
+{
+    send(_fd, response.get_msg().c_str(), response.get_msg().size(), 0);
 }

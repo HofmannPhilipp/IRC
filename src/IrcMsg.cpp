@@ -13,7 +13,12 @@ bool is_valid_cmd(const std::string &cmd)
     return false;
 }
 
-IrcMsg::IrcMsg(std::string msg) : _org_msg(msg)
+IrcMsg::IrcMsg(const std::string &msg) : _org_msg(msg)
+{
+    create(msg);
+}
+
+IrcMsg::IrcMsg(const char *msg) : _org_msg(msg)
 {
     create(msg);
 }

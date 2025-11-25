@@ -22,6 +22,11 @@ public:
     Client &operator=(const Client &other);
     ~Client();
 
-    bool get_registered();
+    int get_fd() const;
+    std::string get_nickname() const;
+    bool get_registered() const;
+
+    void set_nickname(const std::string &nickname);
+
     void sendMessage(const IrcMsg &msg);
 };

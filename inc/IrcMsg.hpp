@@ -67,7 +67,8 @@ public:
     };
 
     IrcMsg();
-    IrcMsg(std::string msg);
+    IrcMsg(const std::string &msg);
+    IrcMsg(const char *msg);
     IrcMsg(const IrcMsg &other);
     IrcMsg &operator=(const IrcMsg &other);
     ~IrcMsg();
