@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "IrcMsg.hpp"
 #include <poll.h>
 #include <string>
 #include <sys/types.h>

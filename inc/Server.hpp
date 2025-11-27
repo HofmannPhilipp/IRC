@@ -3,6 +3,7 @@
 
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "IrcMsg.hpp"
 
 #include <iostream>
 #include <string>
@@ -21,11 +22,11 @@ private:
     int _port;
     std::string _serverPassword;
     int _server_fd;
-    std::vector<pollfd> _client_fds{};
     std::vector<Client> _clients;
     std::string _operatorName;
     std::string _operatorPassword;
     std::vector<Channel> _channel;
+    std::vector<pollfd> _poll_fds;
 
 public:
     class ServerException : public std::exception
@@ -52,6 +53,9 @@ public:
     const std::string getOperatorPassword();
     bool isUsernameUsed(const std::string &username);
     std::string getOperatorName();
-    Channel* getChannel(const std::string &name);
-    Client* getClientByNick(const std::string nick);
+    Channel *getChannel(const std::string &name);
+    Client *getClientByNick(const std::string nick);
+    // void handle_msg(std::string msg);
+    void handle_request(const Client &client, const IrcMsg &request);
+    void send_response(const Client &client, const IrcMsg &response);
 };

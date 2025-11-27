@@ -2,61 +2,54 @@
 #include "Server.hpp"
 
 // /NICK Chris
-void commandHandler(Server &server, Client &client, std::string msg) //+ welcher client/client
+void commandHandler(Client &client, const IrcMsg &msg) //+ welcher client/client
 {
-    std::stringstream ss(msg);
-    std::vector<std::string> arg;
-    std::string word;
-    while (ss >> word)
-    {
-        arg.push_back(word); //["NICK", "Chris", "xyz"]
-    }
-
-    if (arg[0] == "CAP LS")
+    const std::string cmd = msg.get_cmd();
+    if (cmd == IRC_CAP)
     {
         // macht Philipp
     }
-    else if (arg[0] == "PASS")
+    else if (cmd == IRC_PASS)
     {
-        handlePass(server, client, arg);
+        handlePass(client, msg);
     }
-    else if (arg[0] == "NICK")
+    else if (cmd == IRC_NICK)
     {
-        handleNick(server, client, arg);
+        handleNick(client, msg);
     }
-    else if (arg[0] == "USER")
+    else if (cmd == IRC_USER)
     {
-        handleClient(client, arg);
+        handleClient(client, msg);
     }
-    else if (arg[0] == "OPER")
+    else if (cmd == IRC_OPER)
     {
-        handleOper(server, client, arg);
+        handleOper(client, msg);
     }
-    else if (arg[0] == "MODE")
+    else if (cmd == IRC_MODE)
     {
-        handleMode(server, client, arg);
+        handleMode(client, msg);
     }
-    else if (arg[0] == "QUIT")
+    else if (cmd == IRC_QUIT)
     {
-        handleQuit(client, arg);
+        handleQuit(client, msg);
     }
-    else if (arg[0] == "JOIN")
+    else if (cmd == IRC_JOIN)
     {
-        handleJoin(client, arg);
+        handleJoin(client, msg);
     }
-    else if (arg[0] == "TOPIC")
+    else if (cmd == IRC_TOPIC)
     {
-        handleTopic(client, arg);
+        handleTopic(client, msg);
     }
-    else if (arg[0] == "KICK")
+    else if (cmd == IRC_KICK)
     {
-        handleKick(client, arg);
+        handleKick(client, msg);
     }
-    else if (arg[0] == "PRIVMSG")
+    else if (cmd == IRC_PRIVMSG)
     {
-        privMsg(client, arg);
+        privMsg(client, msg);
     }
-    else if (arg[0] == "NOTICE")
+    else if (cmd == IRC_NOTICE)
     {
     }
     else

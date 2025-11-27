@@ -3,31 +3,29 @@
 #include "Server.hpp"
 #include "commandUtils.hpp"
 
-bool checkNickname(const std::string &nick);
-
-void handlePass(Server &server, Client &client, const std::vector<std::string> &args)
+void handlePass(Client &client, const IrcMsg &msg)
 {
     if (client.get_registered())
     {
         client.sendMessage("462 :You may not reregister");
         return;
     }
-    if (args.size() < 2)
+    if (msg.get_params().size() < 2)
     {
         client.sendMessage("461 PASS :Not enough parameters");
         return;
     }
-    std::string pass = args[1];
+    std::string pass = msg.get_params()[0];
 
     if (pass != server.getPassword())
     {
-      client.sendMessage("464 :Password incorrect");
-      return;
+        client.sendMessage("464 :Password incorrect");
+        return;
     }
     client.setPasswordCorrect(true);
 }
 
-void handleNick(Server &server, Client &client, const std::vector<std::string> &args)
+void handleNick(Client &client, const IrcMsg &msg)
 {
     if (args.size() < 2)
     {
@@ -39,36 +37,39 @@ void handleNick(Server &server, Client &client, const std::vector<std::string> &
         client.sendMessage("432 :Erroneous nickname");
         return;
     }
-    
+
     std::string newNickname = args[1];
 
     if (server.isNickUsed(newNickname))
     {
         client.sendMessage("433 :Nickname is already in use");
-        return;        
+        return;
     }
 
     client.setNickname(newNickname);
 
-    //Nachricht an alle Clients ausser beim ersten setzen dbeim einloggen:
-    //:NICK <oldNick> <newNick>
+    // Nachricht an alle Clients ausser beim ersten setzen dbeim einloggen:
+    //: NICK <oldNick> <newNick>
 }
 
-void handleUser(Client &client, const std::vector<std::string> &args)
+void handleUser(Client &client, const IrcMsg &msg)
 {
     // USER <username> <hostname> <servername> :<realname>
-    //USER chris 0 * :Christopher Klein
+    // USER chris 0 * :Christopher Klein
     //-> hostname und serverbname ignoriert da eh schon bekannt
-    
 
     // chekcen ob client bereits regestriert
-    //chekcen ob genug paramenter
-    //daten speichern (username etc)
-    //client regestrien setRegistration(true)
-    //username != nickname
+    // chekcen ob genug paramenter
+    // daten speichern (username etc)
+    // client regestrien setRegistration(true)
+    // username != nickname
 }
 
+<<<<<<< HEAD
 void handleOper(Server &server, Client &client, const std::vector<std::string> &args)
+=======
+void handleOper(Client &client, const IrcMsg &msg)
+>>>>>>> server3
 {
     // OPER <username> <password>             macht Client zu SERVER OPERATOR...
 
@@ -84,21 +85,25 @@ void handleOper(Server &server, Client &client, const std::vector<std::string> &
         client.sendMessage("491 :No O-lines for your host");
         return;
     }
-    if(server.getOperatorPassword() != password)
+    if (server.getOperatorPassword() != password)
     {
         client.sendMessage("464 :Password incorrect");
-        return;        
+        return;
     }
     client.setOperator(true);
     client.sendMessage("381 :You are now an IRC operator");
 }
 
+<<<<<<< HEAD
 void handleMode(Server &server, Client &client, const std::vector<std::string> &args)
+=======
+void handleMode(Client &client, const IrcMsg &msg)
+>>>>>>> server3
 {
     // MODE <channel> <modes> [parameters]
-    //cechlken ob channel exestiert 
-    //checkebn ob client in channel ist 
-    //checken ob client operator ist 
+    // cechlken ob channel exestiert
+    // checkebn ob client in channel ist
+    // checken ob client operator ist
 
     if (args.size() < 2)
     {
@@ -106,7 +111,6 @@ void handleMode(Server &server, Client &client, const std::vector<std::string> &
         return;
     }
 
-    
     std::string channelName = args[1];
     Channel *channel = server.getChannel(channelName);
 
@@ -121,7 +125,7 @@ void handleMode(Server &server, Client &client, const std::vector<std::string> &
         return;
     }
 
-    //nur MODE <channel> ignoriere ich erstmal  gib aktuelle Einstellungen aus
+    // nur MODE <channel> ignoriere ich erstmal  gib aktuelle Einstellungen aus
 
     if (!channel->isOperator(client))
     {
@@ -133,7 +137,7 @@ void handleMode(Server &server, Client &client, const std::vector<std::string> &
     bool adding = true;
     size_t paramIndex = 3;
 
-    //broadcast string
+    // broadcast string
     std::string appliedModes;
     std::vector<std::string> appliedParams;
 
@@ -154,92 +158,92 @@ void handleMode(Server &server, Client &client, const std::vector<std::string> &
 
         switch (m)
         {
-            case 'i':
-                channel->setInviteOnly(adding);
-                appliedModes += (adding ? "+i" : "-i");
-                break;
+        case 'i':
+            channel->setInviteOnly(adding);
+            appliedModes += (adding ? "+i" : "-i");
+            break;
 
-            case 't':
-                channel->setTopicProtected(adding);
-                appliedModes += (adding ? "+t" : "-t");
-                break;
+        case 't':
+            channel->setTopicProtected(adding);
+            appliedModes += (adding ? "+t" : "-t");
+            break;
 
-            case 'k':
-                if (adding == true)
-                {
-                    if (paramIndex >= args.size())
-                    {
-                        client.sendMessage("461 MODE :Not enough parameters");
-                        return;
-                    }
-                    channel->setPassword(args[paramIndex]);
-                    appliedModes += "+k";
-                    appliedParams.push_back(args[paramIndex]);
-                    paramIndex++; 
-                }
-                else
-                {
-                    channel->clearPassword();
-                    appliedModes += "-k";
-                }
-                break;
-
-            case 'l':
-                if (adding)
-                {
-                    if (paramIndex >= args.size())
-                    {
-                        client.sendMessage("461 MODE :Not enough parameters");
-                        return;
-                    }
-                    size_t limit = atoi(args[paramIndex].c_str());
-                    if (limit <= 0)
-                    {
-                        client.sendMessage("461 MODE :Limit must be > 0");
-                        return;
-                    }
-                    channel->setLimit(limit);
-                    appliedModes += "+l";
-                    appliedParams.push_back(args[paramIndex]);
-                    paramIndex++;
-                }
-                else
-                {
-                    if (channel->isUserLimitSet() == true)
-                        appliedModes += "-l";
-                    channel->clearUserLimit();
-                }
-                break;
-
-            case 'o':
+        case 'k':
+            if (adding == true)
+            {
                 if (paramIndex >= args.size())
                 {
                     client.sendMessage("461 MODE :Not enough parameters");
-                    return;                    
-                }
-                std::string nick = args[paramIndex++];
-                Client *target = server.getClientByNick(nick);
-
-                if (!target || !channel->isMember(nick))
-                {
-                    client.sendMessage("441 " + nick + " " + channelName + " :They aren't on that channel");
                     return;
                 }
-                if (adding)
-                    channel->addOperator(*target);
-                else
-                    channel->removeOperator(*target);
+                channel->setPassword(args[paramIndex]);
+                appliedModes += "+k";
+                appliedParams.push_back(args[paramIndex]);
+                paramIndex++;
+            }
+            else
+            {
+                channel->clearPassword();
+                appliedModes += "-k";
+            }
+            break;
 
-                appliedModes += (adding ? "+o" : "-o");
-                appliedParams.push_back(nick);
+        case 'l':
+            if (adding)
+            {
+                if (paramIndex >= args.size())
+                {
+                    client.sendMessage("461 MODE :Not enough parameters");
+                    return;
+                }
+                size_t limit = atoi(args[paramIndex].c_str());
+                if (limit <= 0)
+                {
+                    client.sendMessage("461 MODE :Limit must be > 0");
+                    return;
+                }
+                channel->setLimit(limit);
+                appliedModes += "+l";
+                appliedParams.push_back(args[paramIndex]);
+                paramIndex++;
+            }
+            else
+            {
+                if (channel->isUserLimitSet() == true)
+                    appliedModes += "-l";
+                channel->clearUserLimit();
+            }
+            break;
 
-                break;
-            default:
-                 client.sendMessage("472 " + std::string(1, m) + " :is unknown mode char");
-                break;
+        case 'o':
+            if (paramIndex >= args.size())
+            {
+                client.sendMessage("461 MODE :Not enough parameters");
+                return;
+            }
+            std::string nick = args[paramIndex++];
+            Client *target = server.getClientByNick(nick);
+
+            if (!target || !channel->isMember(nick))
+            {
+                client.sendMessage("441 " + nick + " " + channelName + " :They aren't on that channel");
+                return;
+            }
+            if (adding)
+                channel->addOperator(*target);
+            else
+                channel->removeOperator(*target);
+
+            appliedModes += (adding ? "+o" : "-o");
+            appliedParams.push_back(nick);
+
+            break;
+        default:
+            client.sendMessage("472 " + std::string(1, m) + " :is unknown mode char");
+            break;
         }
     }
-    
+
     if (!appliedModes.empty())
     {
         std::string msg = ":" + client.getNickname() + " MODE " + channelName + " " + appliedModes;
@@ -252,14 +256,14 @@ void handleMode(Server &server, Client &client, const std::vector<std::string> &
     }
 }
 
-void handleQuit(Client &client, const std::vector<std::string> &args)
+void handleQuit(Client &client, const IrcMsg &msg)
 {
     // braodcast to channel
     // remove Client from channel
     // disconnect Client
 }
 
-void handleJoin(Client &client, const std::vector<std::string> &args)
+void handleJoin(Client &client, const IrcMsg &msg)
 {
     // check ob arg groesser als 2
     // channle name muss mit # anfangen?
@@ -268,7 +272,7 @@ void handleJoin(Client &client, const std::vector<std::string> &args)
     // boradcast join
 }
 
-void handleTopic(Client &client, const std::vector<std::string> &args)
+void handleTopic(Client &client, const IrcMsg &msg)
 {
     // arg muss groeser gleich 2 sein
     //  arg[1] = channel name
@@ -278,7 +282,7 @@ void handleTopic(Client &client, const std::vector<std::string> &args)
     // if arg == 3 topic setzen (in channel struct) ((setter und getter func benutzen))
 }
 
-void handleKick(Client &client, const std::vector<std::string> &args)
+void handleKick(Client &client, const IrcMsg &msg)
 {
     // arg muss groesser gleich 3 sein
     // arg[1] channel name
@@ -292,7 +296,7 @@ void handleKick(Client &client, const std::vector<std::string> &args)
     // Target aus Channel entfernen
 }
 
-void privMsg(Client &client, const std::vector<std::string> &args)
+void privMsg(Client &client, const IrcMsg &msg)
 {
     // arg muss groesser gleich 3 sein
     // arg[1] channel name
