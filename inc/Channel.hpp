@@ -12,7 +12,7 @@ private:
 
     // verscheidene Modes....
     bool _inviteOnly;
-    bool _topicProtected;   
+    bool _topicProtected;
     bool _passwordSet;
     std::string _password;
     bool _userLimitSet;
@@ -42,8 +42,7 @@ public:
     void removeFromList(std::vector<Client> &list, const std::string &nick);
     void removeMember(Client &client);
     void removeOperator(Client &client);
-    const std::vector<Client*>& getMembers() const;
+    const std::vector<Client> &getMembers() const;
     size_t getMemberCount() const;
     size_t getUserLimit() const;
-
 };

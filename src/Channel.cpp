@@ -152,3 +152,8 @@ size_t Channel::getUserLimit() const
 {
     return _userlimit;
 }
+
+const std::vector<Client> &Channel::getMembers() const
+{
+    return _memberList;
+}

@@ -168,13 +168,13 @@ void Server::broadcastToChannel(const Client &client, Channel &channel, const st
 {
     const std::string senderNick = client.getNickname();
 
-    for (Client *member : channel.getMembers())
+    for (Client currentClient : channel.getMembers())
     {
         // Sende NICHT an den ursprünglichen Sender
-        if (member->getNickname() == senderNick)
+        if (currentClient.getNickname() == senderNick)
             continue;
 
-        member->sendMessage(msg);
+        sendResponse(currentClient, msg);
     }
 }
 

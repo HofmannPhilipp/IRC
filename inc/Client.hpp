@@ -32,7 +32,7 @@ public:
     std::string getNickname() const;
     std::string getUsername() const;
     bool getOperator() const;
-    void setNickname(std::string nick);
+    void setNickname(const std::string &nick);
     void sendMessage(const std::string &msg);
     void setPasswordCorrect(bool passwordCorrect);
     void setOperator(bool is_op);

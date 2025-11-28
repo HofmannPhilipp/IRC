@@ -26,7 +26,7 @@ private:
     std::vector<Client> _clients;
     std::string _operatorName;
     std::string _operatorPassword;
-    std::vector<Channel> _channel;
+    std::vector<Channel> _channelList;
     std::vector<pollfd> _poll_fds;
 
 public:

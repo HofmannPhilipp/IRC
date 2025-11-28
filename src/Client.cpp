@@ -76,8 +76,10 @@ std::string Client::getNickname() const
     return _nickname;
 }
 
-void Client::setNickname(std::string nick)
+void Client::setNickname(const std::string &nick)
 {
+    if (!checkNickname(nick))
+        throw std::invalid_argument("Error invalid nickname"); // TODO: better exception
     _nickname = nick;
 }
 
