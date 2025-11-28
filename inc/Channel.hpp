@@ -20,7 +20,7 @@ private:
 
 public:
     Channel();
-    Channel(const std::string &nickname, bool is_op, int fd);
+    Channel(const std::string &name, const std::string &password);
     Channel(const Channel &other);
     Channel &operator=(const Channel &other);
     ~Channel();

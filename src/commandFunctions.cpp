@@ -292,10 +292,9 @@ void Server::handleJoin(Client &client, const IrcMsg &msg) // join #channel [pas
         client.sendMessage("403 " + channelName + " :No such channel");
         return;
     }
-    // Channel *channel = nullptr;
     if (!channelExists(channelName)) // no channel -> gets created
     {
-        Channel channel(channelName);
+        Channel channel(channelName, "");
         _channelList.push_back(channel); // TODO: Channel Contructer fixen
 
         // First User must be Operator
@@ -304,13 +303,13 @@ void Server::handleJoin(Client &client, const IrcMsg &msg) // join #channel [pas
     else
     {
         Channel channel = getChannel(channelName);
-        if (channel->isPasswordSet() && channel->getPassword() != pass)
+        if (channel.isPasswordSet() && channel.getPassword() != pass)
         {
             client.sendMessage("475 " + channelName + " :Bad channel key");
             return;
         }
 
-        if (channel->isUserLimitSet() && channel->getMemberCount() >= channel->getUserLimit())
+        if (channel.isUserLimitSet() && channel.getMemberCount() >= channel.getUserLimit())
         {
             client.sendMessage("471 " + channelName + " :Channel is full");
             return;
