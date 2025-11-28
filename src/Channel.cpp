@@ -147,3 +147,8 @@ size_t Channel::getMemberCount() const
 {
     return _memberList.size();
 }
+
+size_t Channel::getUserLimit() const
+{
+    return _userlimit;
+}
