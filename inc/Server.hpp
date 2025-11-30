@@ -5,6 +5,7 @@
 #include "Channel.hpp"
 #include "IrcMsg.hpp"
 
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -59,11 +60,14 @@ public:
     bool isUsernameUsed(const std::string &username);
     void sendResponse(const Client &client, const IrcMsg &response) const;
     void sendResponse(const Client &client, const std::string &msg) const;
+    void sendResponse(const Client &client, const char *msg) const;
+    void sendWelcomeMessage(const Client &client) const;
 
     void handleRequest(Client &client, const IrcMsg &msg);
     void handleCap(Client &client, const IrcMsg &msg);
     void handlePass(Client &client, const IrcMsg &msg);
     void handleNick(Client &client, const IrcMsg &msg);
+    void handleUser(Client &client, const IrcMsg &msg);
     void handleClient(Client &client, const IrcMsg &msg);
     void handleOper(Client &client, const IrcMsg &msg);
     void handleMode(Client &client, const IrcMsg &msg);
@@ -76,6 +80,6 @@ public:
     void broadcastToChannel(const Client &client, Channel &channel, const std::string &msg);
     bool channelExists(std::string channelName);
 
-    void connectClient(void);
-    void disconnectClient(Client &client, int id);
+    void connectClient();
+    void disconnectClient(Client &client);
 };

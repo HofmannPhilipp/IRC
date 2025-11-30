@@ -85,18 +85,18 @@ void Channel::addOperator(Client &client)
     _operatorList.push_back(client);
 }
 
-void Channel::removeOperator(Client &client)
-{
-    for (auto it = _operatorList.begin(); it != _operatorList.end(); ++it)
-    {
-        if (it->getNickname() == client.getNickname())
-        {
-            _operatorList.erase(it);
-            return;
-        }
-        return;
-    }
-}
+// void Channel::removeOperator(Client &client)
+// {
+//     for (auto it = _operatorList.begin(); it != _operatorList.end(); ++it)
+//     {
+//         if (it->getNickname() == client.getNickname())
+//         {
+//             _operatorList.erase(it);
+//             return;
+//         }
+//         return;
+//     }
+// }
 
 bool Channel::isOperator(Client &client)
 {

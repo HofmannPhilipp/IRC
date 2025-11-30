@@ -9,17 +9,17 @@ bool checkNickname(const std::string &nick)
     if (nick.empty())
         return false;
 
-    if (!isalpha(nick[0]))
+    if (nick.length() > 9)
         return false;
 
-    if (nick.length() < 1 || nick.length() > 9)
+    if (!std::isalpha(nick[0]))
         return false;
 
     for (size_t i = 0; i < nick.size(); i++)
     {
         char c = nick[i];
 
-        if (isalnum(c))
+        if (std::isalnum(c))
             continue;
 
         if (c == '-' || c == '[' || c == ']' ||
@@ -33,47 +33,84 @@ bool checkNickname(const std::string &nick)
     return true;
 }
 
-Client::Client() : _fd(-1), _nickname(""), _registered(false), _is_op(false), _passwordCorrect(false) {}
-
-Client::Client(int fd, std::string nickname, bool is_registerd, bool is_op) : _fd(fd), _registered(is_registerd), _is_op(is_op)
+Client::Client() : _fd(-1),
+                   _nickname(""),
+                   _username(""),
+                   _realName(""),
+                   _hasNick(false),
+                   _hasUser(false),
+                   _hasPass(false),
+                   _isRegistered(false)
 {
-    if (!checkNickname(nickname))
-        throw std::invalid_argument("Error invalid nickname"); // TODO: better exception
-    _nickname = nickname;
 }
 
-Client::Client(int fd, std::string nickname, bool is_registerd, bool is_op, bool passwordCorrect) : _fd(fd), _registered(is_registerd), _is_op(is_op), _passwordCorrect(passwordCorrect)
-{
-    if (!checkNickname(nickname))
-        throw std::invalid_argument("Error invalid nickname"); // TODO: better exception
-    _nickname = nickname;
-}
+Client::Client(int fd) : _fd(fd),
+                         _nickname(""),
+                         _username(""),
+                         _realName(""),
+                         _hasNick(false),
+                         _hasUser(false),
+                         _hasPass(false),
+                         _isRegistered(false) {}
 
-Client::Client(const Client &other) : _fd(other._fd), _nickname(other._nickname), _registered(other._registered), _is_op(other._is_op), _passwordCorrect(other._passwordCorrect) {}
+Client::Client(const Client &other) : _fd(other._fd),
+                                      _nickname(other._nickname),
+                                      _username(other._username),
+                                      _realName(other._realName),
+                                      _hasNick(other._hasNick),
+                                      _hasUser(other._hasUser),
+                                      _hasPass(other._hasPass),
+                                      _isRegistered(other._isRegistered)
+{
+}
 
 Client &Client::operator=(const Client &other)
 {
     if (this == &other)
         return *this;
 
-    _nickname = other._nickname;
-    _is_op = other._is_op;
     _fd = other._fd;
-    _registered = other._registered;
-    _passwordCorrect = other._passwordCorrect;
+    _nickname = other._nickname;
+    _username = other._username;
+    _realName = other._realName;
+
+    _hasNick = other._hasNick;
+    _hasUser = other._hasUser;
+    _hasPass = other._hasPass;
+    _isRegistered = other._isRegistered;
+
     return *this;
 }
 
-Client::~Client() {} // TODO: CLOSE FD
-
-void Client::setPasswordCorrect(bool passwordCorrect)
+Client::~Client()
 {
-    _passwordCorrect = passwordCorrect;
+    // if (_fd > 0)
+    //     close(_fd);
+} // TODO: CLOSE FD
+
+int Client::getFd() const
+{
+    return _fd;
 }
 
 std::string Client::getNickname() const
 {
     return _nickname;
+}
+
+std::string Client::getUsername() const
+{
+    return _username;
+}
+
+std::string Client::getRealname() const
+{
+    return _realName;
+}
+
+bool Client::getIsRegistered() const
+{
+    return _isRegistered;
 }
 
 void Client::setNickname(const std::string &nick)
@@ -83,34 +120,41 @@ void Client::setNickname(const std::string &nick)
     _nickname = nick;
 }
 
-void Client::setOperator(bool is_op)
+void Client::setUsername(const std::string &name)
 {
-    _is_op = is_op;
+    _username = name;
 }
 
-std::string Client::getUsername() const
+void Client::setRealname(const std::string &name)
 {
-    return _username;
+    _realName = name;
 }
 
-bool Client::getOperator() const
+void Client::setHasPass(bool flag)
 {
-    return _is_op;
+    _hasPass = flag;
 }
 
-int Client::getFd() const
+void Client::setHasNick(bool flag)
 {
-    return _fd;
+    _hasNick = flag;
 }
 
-bool Client::getRegistered() const
+void Client::setHasUser(bool flag)
 {
-    return _registered;
+    _hasUser = flag;
 }
 
-bool Client::getPasswordCorrect() const
+bool Client::canRegister()
 {
-    return _passwordCorrect;
+    if (_isRegistered)
+        return false;
+    if (_hasPass && _hasNick && _hasUser)
+    {
+        _isRegistered = true;
+        return true;
+    }
+    return false;
 }
 
 std::ostream &operator<<(std::ostream &os, const Client &client)
@@ -122,35 +166,13 @@ std::ostream &operator<<(std::ostream &os, const Client &client)
     os << "  Username:         " << client.getUsername() << std::endl;
 
     os << "  Registration:     ";
-    if (client.getRegistered())
+    if (client.getIsRegistered())
     {
         os << "**REGISTERED** (Ready)";
     }
     else
     {
         os << "Pending";
-    }
-    os << std::endl;
-
-    os << "  Operator Status:  ";
-    if (client.getOperator())
-    {
-        os << "Yes (OP)";
-    }
-    else
-    {
-        os << "No";
-    }
-    os << std::endl;
-
-    os << "  Password Correct: ";
-    if (client.getPasswordCorrect())
-    {
-        os << "Validated";
-    }
-    else
-    {
-        os << "Not Checked/Failed";
     }
     os << std::endl;
 

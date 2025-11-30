@@ -79,7 +79,7 @@ void Server::run()
             {
                 std::cout << "new client connected!\n";
                 _poll_fds.push_back({client_fd, POLLIN, 0});
-                _clients.push_back(Client(client_fd, "", false, false));
+                _clients.push_back(Client(client_fd));
             }
         }
         for (size_t i = 1; i < _poll_fds.size(); i++)
@@ -91,37 +91,41 @@ void Server::run()
                 bytes_recvd = recv(_poll_fds[i].fd, buffer, sizeof(buffer) - 1, 0);
                 if (bytes_recvd <= 0)
                 {
-                    disconnectClient(_clients[i], i);
+                    std::cout << "Client disconnected!\n";
+                    close(_poll_fds[i].fd);
+                    _poll_fds.erase(_poll_fds.begin() + i);
+                    _clients.erase(_clients.begin() + i);
                     i--;
                     continue;
                 }
                 if (bytes_recvd >= 512)
                 {
-                    std::cout << "SPAM!!!" << std::endl;
-
-                    disconnectClient(_clients[i], i);
+                    std::cout << "SPAM!!! Client disconnected!\n";
+                    close(_poll_fds[i].fd);
+                    _poll_fds.erase(_poll_fds.begin() + i);
+                    _clients.erase(_clients.begin() + i);
                     i--;
                     continue;
                 }
                 buffer[bytes_recvd] = '\0';
                 std::string msg(buffer);
-                std::cout << "Client: " << msg << std::endl;
-                IrcMsg request;
                 try
                 {
                     size_t pos = 0;
                     while ((pos = msg.find("\r\n")) != std::string::npos)
                     {
 
+                        std::cout << "Client: " << msg << "\n";
+                        IrcMsg request;
                         request.create(msg.substr(0, pos + 2));
                         std::cout << request << std::endl;
-                        handleRequest(_clients[i], request);
+                        handleRequest(_clients[i - 1], request);
                         msg = msg.substr(pos + 2);
                     }
                 }
                 catch (const IrcMsg::IrcMsgException &e)
                 {
-                    std::cerr << e.what() << std::endl;
+                    std::cerr << e.what() << '\n';
                 }
             }
         }
@@ -129,39 +133,25 @@ void Server::run()
     close(_server_fd);
 }
 
-void Server::handleRequest(Client &client, const IrcMsg &msg)
-{
-
-    const std::string cmd = msg.get_cmd();
-
-    void (Server::*functions[])(Client &, const IrcMsg &) = {
-        &Server::handleCap,
-        &Server::handlePass,
-        &Server::handleNick,
-        &Server::handleClient,
-        &Server::handleOper,
-        &Server::handleQuit,
-        &Server::handleJoin,
-        &Server::handleTopic,
-        &Server::handleKick,
-        &Server::privMsg,
-        &Server::handleNotice,
-    };
-
-    for (int i = 0; i < IRC_COMMANDS.size(); i++)
-    {
-        if (cmd == IRC_COMMANDS[i])
-        {
-            (this->*functions[i])(client, msg);
-            return;
-        }
-    }
-    throw ServerException("Invalid Cmd");
-}
-
 void Server::sendResponse(const Client &client, const IrcMsg &response) const
 {
     send(client.getFd(), response.get_msg().c_str(), response.get_msg().size(), 0);
+}
+
+void Server::sendResponse(const Client &client, const std::string &msg) const
+{
+    send(client.getFd(), msg.c_str(), msg.size(), 0);
+}
+
+void Server::sendResponse(const Client &client, const char *msg) const
+{
+    send(client.getFd(), msg, std::strlen(msg), 0);
+}
+
+void Server::sendWelcomeMessage(const Client &client) const
+{
+    std::string msg(":TEST_SERVER_34 001 " + client.getNickname() + "Welcome to the IRC Network 34!");
+    send(client.getFd(), msg.c_str(), msg.size(), 0);
 }
 
 void Server::broadcastToChannel(const Client &client, Channel &channel, const std::string &msg)
@@ -178,11 +168,6 @@ void Server::broadcastToChannel(const Client &client, Channel &channel, const st
     }
 }
 
-void Server::sendResponse(const Client &client, const std::string &msg) const
-{
-    send(client.getFd(), msg.c_str(), msg.size(), 0);
-}
-
 void Server::connectClient(void)
 {
     int client_fd = accept(_poll_fds[0].fd, nullptr, nullptr);
@@ -190,11 +175,11 @@ void Server::connectClient(void)
     {
         std::cout << "new client connected!\n";
         _poll_fds.push_back(pollfd{client_fd, POLLIN, 0});
-        _clients.push_back(Client(client_fd, "", false, false));
+        _clients.push_back(Client(client_fd));
     }
 }
 
-void Server::disconnectClient(Client &client, int id)
+void Server::disconnectClient(Client &client)
 {
     int client_fd = client.getFd();
 
@@ -211,7 +196,6 @@ void Server::disconnectClient(Client &client, int id)
         std::cout << client << std::endl;
         std::cout << "Disconnected!" << std::endl;
 
-        close(client_fd); // TODO: close maybe in Client destructor
         _poll_fds.erase(_poll_fds.begin() + index);
         _clients.erase(it);
     }

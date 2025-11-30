@@ -41,7 +41,6 @@ public:
     bool isOperator(Client &client);
     void removeFromList(std::vector<Client> &list, const std::string &nick);
     void removeMember(Client &client);
-    void removeOperator(Client &client);
     const std::vector<Client> &getMembers() const;
     size_t getMemberCount() const;
     size_t getUserLimit() const;

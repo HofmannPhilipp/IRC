@@ -2,7 +2,7 @@
 
 bool Server::channelExists(std::string channelName)
 {
-    for (auto it = _channel.begin(); it != _channel.end(); it++)
+    for (auto it = _channelList.begin(); it != _channelList.end(); it++)
     {
         if (it->getName() == channelName)
         {
@@ -14,7 +14,7 @@ bool Server::channelExists(std::string channelName)
 
 Channel &Server::getChannel(const std::string &name)
 {
-    for (auto it = _channel.begin(); it != _channel.end(); it++)
+    for (auto it = _channelList.begin(); it != _channelList.end(); it++)
     {
         if (it->getName() == name)
         {
@@ -62,19 +62,6 @@ bool Server::isUsernameUsed(const std::string &username)
 std::string Server::getOperatorName() const
 {
     return _operatorName;
-}
-
-Channel &Server::getChannel(const std::string &name)
-{
-    for (auto it = _channel.begin(); it != _channel.end(); ++it)
-    {
-        if (it->getName() == name)
-        {
-            return *it;
-        }
-    }
-
-    throw ServerException("");
 }
 
 Client &Server::getClientByNick(const std::string nick)
