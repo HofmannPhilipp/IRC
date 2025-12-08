@@ -135,16 +135,20 @@ void Server::run()
 
 void Server::sendResponse(const Client &client, const IrcMsg &response) const
 {
+    std::cout << "Server to client[" << client.getFd() << "]: " << response.get_msg() << std::endl;
     send(client.getFd(), response.get_msg().c_str(), response.get_msg().size(), 0);
 }
 
 void Server::sendResponse(const Client &client, const std::string &msg) const
 {
+    std::cout << "Server to client[" << client.getFd() << "]: " << msg << std::endl;
     send(client.getFd(), msg.c_str(), msg.size(), 0);
 }
 
 void Server::sendResponse(const Client &client, const char *msg) const
 {
+    std::cout << "Server to client[" << client.getFd() << "]: " << msg << std::endl;
+
     send(client.getFd(), msg, std::strlen(msg), 0);
 }
 
