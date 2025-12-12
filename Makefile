@@ -1,6 +1,6 @@
 NAME = server
 CXX = c++
-CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -I./inc -fsanitize=address
+CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -I./inc
 
 VPATH = ./src
 

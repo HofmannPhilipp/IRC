@@ -6,30 +6,35 @@ void Server::handleRequest(Client &client, const IrcMsg &msg)
 
     const std::string cmd = msg.get_cmd();
 
-    void (Server::*functions[])(Client &, const IrcMsg &) = {
-        &Server::handleCap,
-        &Server::handlePass,
-        &Server::handleNick,
-        &Server::handleUser,
-        // &Server::handleClient,
-        // &Server::handleOper,
-        // &Server::handleQuit,
-        // &Server::handleJoin,
-        // &Server::handleTopic,
-        // &Server::handleKick,
-        // &Server::privMsg,
-        // &Server::handleNotice,
+    using CommandFunction = void (Server::*)(Client &, const IrcMsg &);
+
+    static const std::map<std::string, CommandFunction> functions{
+
+        {"CAP", &Server::handleCap},
+        {"PASS", &Server::handlePass},
+        {"NICK", &Server::handleNick},
+        {"USER", &Server::handleUser},
+
+        // {"OPER", &Server::handleOper},
+        // {"MODE", &Server::handleMode},
+        // {"QUIT", &Server::handleQuit},
+
+        // {"JOIN", &Server::handleJoin},
+        // {"TOPIC", &Server::handleTopic},
+        // {"KICK", &Server::handleKick},
+
+        // {"PRIVMSG", &Server::privMsg},
+        // {"NOTICE", &Server::handleNotice}
     };
 
-    for (size_t i = 0; i < IRC_COMMANDS.size(); i++)
+    auto it = functions.find(cmd);
+    if (it != functions.end())
     {
-        if (cmd == IRC_COMMANDS[i])
-        {
-            (this->*functions[i])(client, msg);
-            return;
-        }
+        CommandFunction handler = it->second;
+        (this->*handler)(client, msg);
     }
-    throw ServerException("Invalid Cmd");
+    else
+        throw ServerException("Invalid Cmd");
 }
 
 void Server::handleCap(Client &client, const IrcMsg &msg)
