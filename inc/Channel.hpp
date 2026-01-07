@@ -1,14 +1,19 @@
+
+#pragma once
+
 #include <string>
 #include <vector>
-#include "Client.hpp"
+#include <functional>
+
+class Client;
 
 class Channel
 {
 private:
     std::string _name;
     std::string _topic;
-    std::vector<Client> _memberList;
-    std::vector<Client> _operatorList;
+    std::vector<Client> _members;
+    std::vector<Client> _operators;
 
     // verscheidene Modes....
     bool _inviteOnly;
@@ -36,11 +41,9 @@ public:
     void clearUserLimit();
     void setLimit(int limit);
     bool isUserLimitSet();
-    void addOperator(Client &client);
-    void removeOperator(Client &client);
-    bool isOperator(Client &client);
-    void removeFromList(std::vector<Client> &list, const std::string &nick);
-    void removeMember(Client &client);
+    void addOperator(const Client &client);
+    bool isOperator(const Client &client) const;
+    void removeMember(const Client &client);
     const std::vector<Client> &getMembers() const;
     size_t getMemberCount() const;
     size_t getUserLimit() const;

@@ -50,10 +50,10 @@ bool Server::isNickUsed(const std::string &nick) const
     return true;
 }
 
-const std::string Server::getOperatorPassword() const
-{
-    return _operatorPassword;
-}
+// const std::string Server::getOperatorPassword() const
+// {
+//     return _operatorPassword;
+// }
 
 bool Server::isUsernameUsed(const std::string &username) const
 {
@@ -68,10 +68,10 @@ bool Server::isUsernameUsed(const std::string &username) const
     return true;
 }
 
-std::string Server::getOperatorName() const
-{
-    return _operatorName;
-}
+// std::string Server::getOperatorName() const
+// {
+//     return _operatorName;
+// }
 
 Client &Server::getClientByNick(const std::string &nick)
 {

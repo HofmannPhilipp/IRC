@@ -1,5 +1,6 @@
 
 #include "Client.hpp"
+#include "Channel.hpp"
 
 bool checkNickname(const std::string &nick)
 {

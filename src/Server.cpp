@@ -10,6 +10,7 @@ Server::Server(const Server &other) : _port(other._port),
                                       _password(other._password),
                                       _server_fd(other._server_fd),
                                       _clients(other._clients),
+                                      _channelList(other._channelList),
                                       _poll_fds(other._poll_fds)
 {
 }
@@ -22,6 +23,8 @@ Server &Server::operator=(const Server &other)
     _password = other._password;
     _server_fd = other._server_fd;
     _poll_fds = other._poll_fds;
+    _clients = other._clients;
+    _channelList = other._channelList;
     return *this;
 }
 
@@ -167,12 +170,12 @@ void Server::broadcastToChannel(const Client &client, Channel &channel, const st
 
 void Server::connectClient(void)
 {
-    int client_fd = accept(_poll_fds[0].fd, nullptr, nullptr);
-    if (client_fd < 0)
-        throw ServerException("Error client accept");
-
     struct sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
+
+    int client_fd = accept(_poll_fds[0].fd, (struct sockaddr *)&client_addr, &client_len);
+    if (client_fd < 0)
+        throw ServerException("Error client accept");
 
     char hostname[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &client_addr.sin_addr, hostname, INET_ADDRSTRLEN);

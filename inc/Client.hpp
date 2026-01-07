@@ -8,7 +8,9 @@
 #include <sys/socket.h>
 #include <exception>
 #include <unistd.h>
-#include "Channel.hpp"
+#include <functional>
+
+class Channel;
 
 class Client
 {

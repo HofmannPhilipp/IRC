@@ -1,4 +1,5 @@
 #include "Channel.hpp"
+#include "Client.hpp"
 
 Channel::Channel() : _name(""), _topic(""), _inviteOnly(false), _topicProtected(false), _password(""), _userlimit(INT32_MAX) {}
 
@@ -7,7 +8,7 @@ Channel::Channel(const std::string &name, const std::string &password) : _name(n
     // TODO: password check channel name check topic check
 }
 
-Channel::Channel(const Channel &other) : _name(other._name), _topic(other._topic), _memberList(other._memberList), _operatorList(other._operatorList), _inviteOnly(other._inviteOnly), _topicProtected(other._topicProtected), _password(other._password), _userlimit(other._userlimit)
+Channel::Channel(const Channel &other) : _name(other._name), _topic(other._topic), _members(other._members), _operators(other._operators), _inviteOnly(other._inviteOnly), _topicProtected(other._topicProtected), _password(other._password), _userlimit(other._userlimit)
 {
 }
 
@@ -18,8 +19,8 @@ Channel &Channel::operator=(const Channel &other)
 
     _name = other._name;
     _topic = other._topic;
-    _memberList = other._memberList;
-    _operatorList = other._operatorList;
+    _members = other._members;
+    _operators = other._operators;
 
     _inviteOnly = other._inviteOnly;
     _topicProtected = other._topicProtected;
@@ -37,7 +38,7 @@ std::string Channel::getName() const
 
 bool Channel::isMember(const std::string &name)
 {
-    for (auto it = _memberList.begin(); it != _memberList.end(); ++it)
+    for (auto it = _members.begin(); it != _members.end(); ++it)
     {
         if (it->getNickname() == name)
             return true;
@@ -75,32 +76,19 @@ void Channel::setLimit(int limit)
     _userlimit = limit;
 }
 
-void Channel::addOperator(Client &client)
+void Channel::addOperator(const Client &client)
 {
-    for (auto it = _operatorList.begin(); it != _operatorList.end(); ++it)
+    for (auto it = _operators.begin(); it != _operators.end(); ++it)
     {
         if (it->getNickname() == client.getNickname())
-            return;
+            return; // TODO: EXCEPTION
     }
-    _operatorList.push_back(client);
+    _operators.push_back(client);
 }
 
-// void Channel::removeOperator(Client &client)
-// {
-//     for (auto it = _operatorList.begin(); it != _operatorList.end(); ++it)
-//     {
-//         if (it->getNickname() == client.getNickname())
-//         {
-//             _operatorList.erase(it);
-//             return;
-//         }
-//         return;
-//     }
-// }
-
-bool Channel::isOperator(Client &client)
+bool Channel::isOperator(const Client &client) const
 {
-    for (auto it = _operatorList.begin(); it != _operatorList.end(); ++it)
+    for (auto it = _operators.begin(); it != _operators.end(); ++it)
     {
         if (it->getNickname() == client.getNickname())
         {
@@ -118,26 +106,16 @@ bool Channel::isUserLimitSet()
         return false;
 }
 
-void Channel::removeFromList(std::vector<Client> &list, const std::string &nick)
+void Channel::removeMember(const Client &client)
 {
-    for (auto it = list.begin(); it != list.end(); ++it)
+    for (auto it = _members.begin(); it != _members.end(); ++it)
     {
-        if (it->getNickname() == nick)
+        if (it->getNickname() == client.getNickname())
         {
-            list.erase(it);
+            _members.erase(it);
             return;
         }
     }
-}
-
-void Channel::removeMember(Client &client)
-{
-    removeFromList(_memberList, client.getNickname());
-}
-
-void Channel::removeOperator(Client &client)
-{
-    removeFromList(_operatorList, client.getNickname());
 }
 
 bool Channel::isPasswordSet() const
@@ -152,7 +130,7 @@ std::string Channel::getPassword() const
 
 size_t Channel::getMemberCount() const
 {
-    return _memberList.size();
+    return _members.size();
 }
 
 size_t Channel::getUserLimit() const
@@ -162,5 +140,5 @@ size_t Channel::getUserLimit() const
 
 const std::vector<Client> &Channel::getMembers() const
 {
-    return _memberList;
+    return _members;
 }

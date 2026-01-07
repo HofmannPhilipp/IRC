@@ -16,7 +16,7 @@ void Server::handleRequest(Client &client, const IrcMsg &msg)
         {"USER", &Server::handleUser},
 
         // {"OPER", &Server::handleOper},
-        // {"MODE", &Server::handleMode},
+        {"MODE", &Server::handleMode},
         // {"QUIT", &Server::handleQuit},
 
         // {"JOIN", &Server::handleJoin},
@@ -163,8 +163,8 @@ void Server::handleUser(Client &client, const IrcMsg &msg)
     //     sendResponse(client, "462 :You may not reregister\r\n");
     //     return;
     // }
-
+    std::cout << "username: " << params[1] << " realname: " << params[3] << std::endl;
     client.setUsername(params[1]); // TODO: Check for valid Username and real name
-    client.setRealname(params[4]);
+    client.setRealname(params[3]);
     client.setHasUser(true);
 }

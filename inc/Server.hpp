@@ -27,8 +27,6 @@ private:
     std::string _password;
     int _server_fd;
     std::vector<Client> _clients;
-    std::string _operatorName;
-    std::string _operatorPassword;
     std::vector<Channel> _channelList;
     std::vector<pollfd> _poll_fds;
 
