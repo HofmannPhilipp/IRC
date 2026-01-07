@@ -1,7 +1,11 @@
 
 #include "Server.hpp"
 
-Server::Server(int port, const std::string &password) : _port(port), _password(password), _server_fd(-1)
+Server::Server(const std::string &severName, int port, const std::string &password) : _serverName(severName),
+                                                                                      _serverPrefix(":" + severName + " "),
+                                                                                      _port(port),
+                                                                                      _password(password),
+                                                                                      _server_fd(-1)
 {
     std::fill(_poll_fds.begin(), _poll_fds.end(), pollfd{});
 }
@@ -19,6 +23,8 @@ Server &Server::operator=(const Server &other)
 {
     if (this == &other)
         return *this;
+    _serverName = other._serverName;
+    _serverPrefix = other._serverPrefix;
     _port = other._port;
     _password = other._password;
     _server_fd = other._server_fd;
@@ -149,7 +155,7 @@ void Server::sendResponse(const Client &client, const char *msg) const
 
 void Server::sendWelcomeMessage(const Client &client) const
 {
-    std::string msg(":TEST_SERVER_34 001 " + client.getNickname() + " Welcome to the IRC Network 34!\r\n");
+    std::string msg(":" + _serverName + " 001 " + client.getNickname() + " Welcome to the IRC Network " + _serverName + " !\r\n");
     std::cout << "Server to client[" << client.getFd() << "]: " << msg << std::endl;
     send(client.getFd(), msg.c_str(), msg.size(), 0);
 }

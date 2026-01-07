@@ -23,6 +23,8 @@
 class Server
 {
 private:
+    std::string _serverName;
+    std::string _serverPrefix;
     int _port;
     std::string _password;
     int _server_fd;
@@ -41,7 +43,7 @@ public:
         const char *what() const noexcept override { return _message.c_str(); }
     };
 
-    Server(int _port, const std::string &_password);
+    Server(const std::string &serverName, int _port, const std::string &_password);
     Server(const Server &other);
     Server &operator=(const Server &other);
     ~Server();
@@ -79,6 +81,7 @@ public:
     void handleKick(Client &client, const IrcMsg &msg);
     void privMsg(Client &client, const IrcMsg &msg);
     void handleNotice(Client &client, const IrcMsg &msg);
+    void handlePing(Client &client, const IrcMsg &msg);
 
     void broadcastToChannel(const Client &client, Channel &channel, const std::string &msg);
     bool channelExists(const std::string &name) const;

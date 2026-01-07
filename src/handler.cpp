@@ -25,7 +25,7 @@ void Server::handleRequest(Client &client, const IrcMsg &msg)
 
         // {"PRIVMSG", &Server::privMsg},
         // {"NOTICE", &Server::handleNotice}
-    };
+        {"PING", &Server::handlePing}};
 
     auto it = functions.find(cmd);
     if (it != functions.end())
@@ -35,6 +35,26 @@ void Server::handleRequest(Client &client, const IrcMsg &msg)
     }
     else
         throw ServerException("Invalid Cmd");
+}
+
+void Server::checkRegistration(Client &client)
+{
+    // Falls der Client schon registriert ist oder noch nicht alles hat, tu nichts
+    if (client.getIsRegistered() || !client.hasNick() || !client.hasUser())
+        return;
+
+    // Falls ein Passwort nötig ist, aber noch nicht kam, auch Abbruch
+    if (_hasPassword && !client.hasPass())
+        return;
+
+    // JETZT ist der Client registriert!
+    client.setIsRegistered(true);
+
+    // Sende die obligatorischen Willkommens-Nachrichten
+
+    sendResponse(client, _prefix + "001 " + client.getNickname() + " :Welcome to the IRC Network " + client.getPrefix() + "\r\n");
+    sendResponse(client, _prefix + "002 " + client.getNickname() + " :Your host is " + _serverName + ", running version 1.0\r\n");
+    // ... 003 und 004 sind optional, aber 001 ist Pflicht für Irssi!
 }
 
 void Server::handleCap(Client &client, const IrcMsg &msg)
@@ -86,7 +106,7 @@ void Server::handlePass(Client &client, const IrcMsg &msg)
 {
     if (client.getIsRegistered())
     {
-        sendResponse(client, "462 :You may not register\r\n");
+        sendResponse(client, ":" + _serverName + " 462 " + client.getNickname() + " :You may not reregister\r\n");
         return;
     }
     if (msg.get_params().size() < 1)
@@ -98,11 +118,9 @@ void Server::handlePass(Client &client, const IrcMsg &msg)
 
     if (pass != getPassword())
     {
-        sendResponse(client, "464 :Password incorrect\r\n");
-
-        // sendResponse(client, "ERROR :Closing Link: user@host [Password Incorrect]\r\n");
-        // disconnectClient(client);
-        // TODO: WELCHE ERROR MESSAGE ???????????
+        sendResponse(client, _serverPrefix + "464 * :Password incorrect\r\n");
+        sendResponse(client, "ERROR :Closing Link: [Access denied by password]\r\n");
+        throw ServerException("Auth failed");
         return;
     }
     client.setHasPass(true);
@@ -110,40 +128,90 @@ void Server::handlePass(Client &client, const IrcMsg &msg)
     //     sendWelcomeMessage(client);
 }
 
+// void Server::handleNick(Client &client, const IrcMsg &msg)
+// {
+//     if (msg.get_params().size() < 1)
+//     {
+//         sendResponse(client, "431 :No nickname given\r\n");
+//         throw ServerException("431 :No nickname given");
+//     }
+//     std::string newNickname = msg.get_params()[0];
+//     if (isNickUsed(newNickname))
+//     {
+//         sendResponse(client, ":" + _serverName + " 433 * " + newNickname + " :Nickname is already in use\r\n");
+//         throw ServerException("433 * " + newNickname + " :Nickname is already in use");
+//     }
+//     try
+//     {
+//         client.setNickname(newNickname);
+//         if (client.getIsRegistered())
+//         {
+//             for (auto c : client.getChannels())
+//             {
+//                 broadcastToChannel(client, c, ":" + client.getPrefix() + " NICK :" + newNickname); // TODO: check if correct
+//             }
+//         }
+//         client.setHasNick(true);
+//     }
+//     catch (const std::exception &e)
+//     {
+//         std::cerr << e.what() << std::endl;
+//         sendResponse(client, "432 :Erroneous nickname\r\n");
+//         throw Server::ServerException("432 :Erroneous nickname");
+//     }
+
+//     // Nachricht an alle Clients ausser beim ersten setzen dbeim einloggen:
+//     //: NICK <oldNick> <newNick>
+// }
+
 void Server::handleNick(Client &client, const IrcMsg &msg)
 {
-    if (msg.get_params().size() < 1)
+    if (msg.get_params().empty())
     {
-        sendResponse(client, "431 :No nickname given\r\n");
-        throw ServerException("431 :No nickname given");
+        // Format: :<servername> 431 <current_nick> :No nickname given
+        std::string reply = ":" + _serverName + " 431 " + client.getNickname() + " :No nickname given\r\n";
+        sendResponse(client, reply);
+        return;
     }
+
     std::string newNickname = msg.get_params()[0];
+
     if (isNickUsed(newNickname))
     {
-        sendResponse(client, "433 * " + newNickname + " :Nickname is already in use\r\n");
-        throw ServerException("433 * " + newNickname + " :Nickname is already in use");
+        // Format: :<servername> 433 <current_nick> <target_nick> :Nickname is already in use
+
+        std::string currentNick = client.hasNick() ? client.getNickname() : "*";
+        std::string reply = ":" + _serverName + " 433 " + currentNick + " " + newNickname + " :Nickname is already in use\r\n";
+
+        sendResponse(client, reply);
+        return;
     }
+
     try
     {
+        std::string oldPrefix = client.getPrefix();
+        std::string oldNick = client.getNickname();
+
         client.setNickname(newNickname);
+        client.setHasNick(true);
+
         if (client.getIsRegistered())
         {
-            for (auto c : client.getChannels())
+            std::string notify = ":" + oldPrefix + " NICK :" + newNickname + "\r\n";
+            // An den Client selbst senden
+            sendResponse(client, notify);
+            for (auto chan : client.getChannels())
             {
-                broadcastToChannel(client, c, ":" + client.getPrefix() + " NICK :" + newNickname); // TODO: check if correct
+                broadcastToChannel(client, chan, notify);
             }
         }
-        client.setHasNick(true);
     }
     catch (const std::exception &e)
     {
-        std::cerr << e.what() << std::endl;
-        sendResponse(client, "432 :Erroneous nickname\r\n");
-        throw Server::ServerException("432 :Erroneous nickname");
+        // 432: Erroneous nickname
+        std::string reply = ":" + _serverName + " 432 * " + newNickname + " :Erroneous nickname\r\n";
+        sendResponse(client, reply);
     }
-
-    // Nachricht an alle Clients ausser beim ersten setzen dbeim einloggen:
-    //: NICK <oldNick> <newNick>
 }
 
 void Server::handleUser(Client &client, const IrcMsg &msg)
@@ -163,8 +231,27 @@ void Server::handleUser(Client &client, const IrcMsg &msg)
     //     sendResponse(client, "462 :You may not reregister\r\n");
     //     return;
     // }
+
     std::cout << "username: " << params[1] << " realname: " << params[3] << std::endl;
     client.setUsername(params[1]); // TODO: Check for valid Username and real name
     client.setRealname(params[3]);
     client.setHasUser(true);
+}
+
+void Server::handleMode(Client &client, const IrcMsg &msg)
+{
+    std::cout << client << std::endl;
+    std::cout << msg << std::endl;
+}
+
+void Server::handlePing(Client &client, const IrcMsg &msg)
+{
+    if (msg.get_params().empty())
+    {
+        sendResponse(client, "PONG :" + _serverName + "\r\n");
+        return;
+    }
+
+    std::string pingParam = msg.get_params()[0];
+    sendResponse(client, "PONG :" + pingParam + "\r\n");
 }
