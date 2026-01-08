@@ -25,6 +25,7 @@ private:
 
 public:
     Channel();
+    Channel(const std::string &name);
     Channel(const std::string &name, const std::string &password);
     Channel(const Channel &other);
     Channel &operator=(const Channel &other);
@@ -42,6 +43,7 @@ public:
     void setLimit(int limit);
     bool isUserLimitSet();
     void addOperator(const Client &client);
+    void addMember(const Client &client);
     bool isOperator(const Client &client) const;
     void removeMember(const Client &client);
     const std::vector<Client> &getMembers() const;

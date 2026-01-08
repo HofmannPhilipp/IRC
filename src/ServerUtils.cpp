@@ -1,30 +1,10 @@
 #include "Server.hpp"
 
-bool Server::channelExists(const std::string &name) const
+Channel &Server::getChannelByName(const std::string &name)
 {
-
-    auto it = std::find_if(_channelList.begin(), _channelList.end(),
-                           [name](const Channel &c)
-                           {
-                               return c.getName() == name;
-                           });
-
-    if (it == _channelList.end())
-        return false;
-    return true;
-}
-
-Channel &Server::getChannel(const std::string &name)
-{
-    auto it = std::find_if(_channelList.begin(), _channelList.end(),
-                           [name](const Channel &c)
-                           {
-                               return c.getName() == name;
-                           });
-
-    if (it == _channelList.end())
+    if (_channelMap.find(name) == _channelMap.end())
         throw ServerException("Channel does not exist");
-    return *it;
+    return _channelMap[name];
 }
 
 std::string Server::getPassword() const
@@ -50,11 +30,6 @@ bool Server::isNickUsed(const std::string &nick) const
     return true;
 }
 
-// const std::string Server::getOperatorPassword() const
-// {
-//     return _operatorPassword;
-// }
-
 bool Server::isUsernameUsed(const std::string &username) const
 {
     auto it = std::find_if(_clients.begin(), _clients.end(),
@@ -66,22 +41,4 @@ bool Server::isUsernameUsed(const std::string &username) const
     if (it == _clients.end())
         return false;
     return true;
-}
-
-// std::string Server::getOperatorName() const
-// {
-//     return _operatorName;
-// }
-
-Client &Server::getClientByNick(const std::string &nick)
-{
-    auto it = std::find_if(_clients.begin(), _clients.end(),
-                           [nick](const Client &c)
-                           {
-                               return c.getNickname() == nick;
-                           });
-
-    if (it == _clients.end())
-        throw ServerException("No Client with " + nick + " found");
-    return *it;
 }

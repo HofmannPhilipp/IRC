@@ -9,6 +9,7 @@
 #include <exception>
 #include <unistd.h>
 #include <functional>
+#include <algorithm>
 
 class Channel;
 
@@ -40,12 +41,15 @@ public:
     std::string getNickname() const;
     std::string getUsername() const;
     std::string getRealname() const;
+    std::string getHostname() const;
     bool getIsRegistered() const;
     std::vector<Channel> getChannels() const;
     std::string getPrefix() const;
     bool hasNick() const;
     bool hasUser() const;
     bool hasPass() const;
+
+    void addChannel(const Channel &channel);
 
     void setNickname(const std::string &nick);
     void setUsername(const std::string &name);

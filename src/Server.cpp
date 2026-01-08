@@ -14,7 +14,7 @@ Server::Server(const Server &other) : _port(other._port),
                                       _password(other._password),
                                       _server_fd(other._server_fd),
                                       _clients(other._clients),
-                                      _channelList(other._channelList),
+                                      _channelMap(other._channelMap),
                                       _poll_fds(other._poll_fds)
 {
 }
@@ -30,7 +30,7 @@ Server &Server::operator=(const Server &other)
     _server_fd = other._server_fd;
     _poll_fds = other._poll_fds;
     _clients = other._clients;
-    _channelList = other._channelList;
+    _channelMap = other._channelMap;
     return *this;
 }
 
@@ -155,9 +155,10 @@ void Server::sendResponse(const Client &client, const char *msg) const
 
 void Server::sendWelcomeMessage(const Client &client) const
 {
-    std::string msg(":" + _serverName + " 001 " + client.getNickname() + " Welcome to the IRC Network " + _serverName + " !\r\n");
+    std::string msg(":" + _serverPrefix + "001 " + client.getNickname() + " :Welcome to the IRC Network " + client.getPrefix() + "\r\n");
     std::cout << "Server to client[" << client.getFd() << "]: " << msg << std::endl;
-    send(client.getFd(), msg.c_str(), msg.size(), 0);
+    sendResponse(client, msg);
+    // sendResponse(client, _serverPrefix + "002 " + client.getNickname() + " :Your host is " + _serverName + ", running version 1.0\r\n");
 }
 
 void Server::broadcastToChannel(const Client &client, Channel &channel, const std::string &msg)
@@ -186,7 +187,7 @@ void Server::connectClient(void)
     char hostname[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &client_addr.sin_addr, hostname, INET_ADDRSTRLEN);
     _poll_fds.push_back(pollfd{client_fd, POLLIN, 0});
-    _clients.push_back(Client(client_fd));
+    _clients.push_back(Client(client_fd, hostname));
     std::cout << "new client connected: " << hostname << " (FD: " << client_fd << ")" << std::endl;
 }
 

@@ -128,6 +128,11 @@ std::string Client::getRealname() const
     return _realName;
 }
 
+std::string Client::getHostname() const
+{
+    return _hostname;
+}
+
 bool Client::getIsRegistered() const
 {
     return _isRegistered;
@@ -157,6 +162,22 @@ bool Client::hasUser() const
 bool Client::hasPass() const
 {
     return _hasPass;
+}
+
+void Client::addChannel(const Channel &channel)
+{
+    // if (!channel)
+    //     return;
+
+    auto channel_it = std::find_if(_channels.begin(), _channels.end(),
+                                   [channel](const Channel &chan)
+                                   {
+                                       return chan.getName() == channel.getName();
+                                   });
+    if (channel_it == _channels.end())
+        return; // TODO: EXCEPTGION
+
+    _channels.push_back(channel);
 }
 
 void Client::setNickname(const std::string &nick)

@@ -3,7 +3,11 @@
 
 Channel::Channel() : _name(""), _topic(""), _inviteOnly(false), _topicProtected(false), _password(""), _userlimit(INT32_MAX) {}
 
-Channel::Channel(const std::string &name, const std::string &password) : _name(name), _topic(""), _password(password)
+Channel::Channel(const std::string &name) : _name(name), _topic(""), _inviteOnly(false), _topicProtected(false), _password(""), _userlimit(INT32_MAX)
+{
+    // TODO: password check channel name check topic check
+}
+Channel::Channel(const std::string &name, const std::string &password) : _name(name), _topic(""), _inviteOnly(false), _topicProtected(false), _password(password), _userlimit(INT32_MAX)
 {
     // TODO: password check channel name check topic check
 }
@@ -84,6 +88,16 @@ void Channel::addOperator(const Client &client)
             return; // TODO: EXCEPTION
     }
     _operators.push_back(client);
+}
+
+void Channel::addMember(const Client &client)
+{
+    for (auto it = _members.begin(); it != _members.end(); ++it)
+    {
+        if (it->getNickname() == client.getNickname())
+            return; // TODO: EXCEPTION
+    }
+    _members.push_back(client);
 }
 
 bool Channel::isOperator(const Client &client) const

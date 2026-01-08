@@ -17,9 +17,9 @@ void Server::handleRequest(Client &client, const IrcMsg &msg)
 
         // {"OPER", &Server::handleOper},
         {"MODE", &Server::handleMode},
-        // {"QUIT", &Server::handleQuit},
+        {"QUIT", &Server::handleQuit},
 
-        // {"JOIN", &Server::handleJoin},
+        {"JOIN", &Server::handleJoin},
         // {"TOPIC", &Server::handleTopic},
         // {"KICK", &Server::handleKick},
 
@@ -35,26 +35,6 @@ void Server::handleRequest(Client &client, const IrcMsg &msg)
     }
     else
         throw ServerException("Invalid Cmd");
-}
-
-void Server::checkRegistration(Client &client)
-{
-    // Falls der Client schon registriert ist oder noch nicht alles hat, tu nichts
-    if (client.getIsRegistered() || !client.hasNick() || !client.hasUser())
-        return;
-
-    // Falls ein Passwort nötig ist, aber noch nicht kam, auch Abbruch
-    if (_hasPassword && !client.hasPass())
-        return;
-
-    // JETZT ist der Client registriert!
-    client.setIsRegistered(true);
-
-    // Sende die obligatorischen Willkommens-Nachrichten
-
-    sendResponse(client, _prefix + "001 " + client.getNickname() + " :Welcome to the IRC Network " + client.getPrefix() + "\r\n");
-    sendResponse(client, _prefix + "002 " + client.getNickname() + " :Your host is " + _serverName + ", running version 1.0\r\n");
-    // ... 003 und 004 sind optional, aber 001 ist Pflicht für Irssi!
 }
 
 void Server::handleCap(Client &client, const IrcMsg &msg)
@@ -80,21 +60,21 @@ void Server::handleCap(Client &client, const IrcMsg &msg)
 
     if (msg.get_params()[0] == "END")
     {
-        if (!client.hasNick())
-        {
-            sendResponse(client, "451 * :You have not registered\r\n");
-            throw ServerException("451 * :You have not registered\r\n");
-        }
-        if (!client.hasUser())
-        {
-            sendResponse(client, "451 * :You have not registered\r\n");
-            throw ServerException("451 * :You have not registered\r\n");
-        }
-        if (!client.hasPass())
-        {
-            sendResponse(client, "451 * :You have not registered, Password required\r\n");
-            throw ServerException("451 * :You have not registered, Password required\r\n");
-        }
+        // if (!client.hasNick())
+        // {
+        //     sendResponse(client, "451 * :You have not registered\r\n");
+        //     throw ServerException("451 * :You have not registered\r\n");
+        // }
+        // if (!client.hasUser())
+        // {
+        //     sendResponse(client, "451 * :You have not registered\r\n");
+        //     throw ServerException("451 * :You have not registered\r\n");
+        // }
+        // if (!client.hasPass())
+        // {
+        //     sendResponse(client, "451 * :You have not registered, Password required\r\n");
+        //     throw ServerException("451 * :You have not registered, Password required\r\n");
+        // }
         if (client.canRegister())
             sendWelcomeMessage(client);
 
@@ -124,45 +104,9 @@ void Server::handlePass(Client &client, const IrcMsg &msg)
         return;
     }
     client.setHasPass(true);
-    // if (client.canRegister())
-    //     sendWelcomeMessage(client);
+    if (client.canRegister())
+        sendWelcomeMessage(client);
 }
-
-// void Server::handleNick(Client &client, const IrcMsg &msg)
-// {
-//     if (msg.get_params().size() < 1)
-//     {
-//         sendResponse(client, "431 :No nickname given\r\n");
-//         throw ServerException("431 :No nickname given");
-//     }
-//     std::string newNickname = msg.get_params()[0];
-//     if (isNickUsed(newNickname))
-//     {
-//         sendResponse(client, ":" + _serverName + " 433 * " + newNickname + " :Nickname is already in use\r\n");
-//         throw ServerException("433 * " + newNickname + " :Nickname is already in use");
-//     }
-//     try
-//     {
-//         client.setNickname(newNickname);
-//         if (client.getIsRegistered())
-//         {
-//             for (auto c : client.getChannels())
-//             {
-//                 broadcastToChannel(client, c, ":" + client.getPrefix() + " NICK :" + newNickname); // TODO: check if correct
-//             }
-//         }
-//         client.setHasNick(true);
-//     }
-//     catch (const std::exception &e)
-//     {
-//         std::cerr << e.what() << std::endl;
-//         sendResponse(client, "432 :Erroneous nickname\r\n");
-//         throw Server::ServerException("432 :Erroneous nickname");
-//     }
-
-//     // Nachricht an alle Clients ausser beim ersten setzen dbeim einloggen:
-//     //: NICK <oldNick> <newNick>
-// }
 
 void Server::handleNick(Client &client, const IrcMsg &msg)
 {
@@ -205,6 +149,8 @@ void Server::handleNick(Client &client, const IrcMsg &msg)
                 broadcastToChannel(client, chan, notify);
             }
         }
+        if (client.canRegister())
+            sendWelcomeMessage(client);
     }
     catch (const std::exception &e)
     {
@@ -226,22 +172,66 @@ void Server::handleUser(Client &client, const IrcMsg &msg)
         throw Server::ServerException("432 :Erroneous nickname");
     }
 
-    // if (client.hasUser())
-    // {
-    //     sendResponse(client, "462 :You may not reregister\r\n");
-    //     return;
-    // }
+    // TODO: Check for already existing username
 
     std::cout << "username: " << params[1] << " realname: " << params[3] << std::endl;
     client.setUsername(params[1]); // TODO: Check for valid Username and real name
     client.setRealname(params[3]);
     client.setHasUser(true);
+    if (client.canRegister())
+        sendWelcomeMessage(client);
 }
 
 void Server::handleMode(Client &client, const IrcMsg &msg)
 {
     std::cout << client << std::endl;
     std::cout << msg << std::endl;
+}
+
+void Server::handleQuit(Client &client, const IrcMsg &msg)
+{
+    std::string reason = msg.get_params().empty() ? client.getNickname() : msg.get_params()[0];
+
+    std::string quitNotify = ":" + client.getPrefix() + " QUIT :Quit: " + reason + "\r\n";
+
+    // TODO: REMOVE FROM OPERATOR LIST
+    for (Channel chan : client.getChannels())
+    {
+        broadcastToChannel(client, chan, quitNotify);
+        chan.removeMember(client);
+    }
+
+    std::string errDoc = "ERROR :Closing Link: " + client.getHostname() + " (Quit: " + reason + ")\r\n";
+    sendResponse(client, errDoc);
+
+    disconnectClient(client);
+}
+
+void Server::handleJoin(Client &client, const IrcMsg &msg)
+{
+    std::string chanName = msg.get_params()[0];
+
+    //  if channel dont exist => create channel
+    if (_channelMap.find(chanName) == _channelMap.end())
+    {
+        Channel newChannel(chanName);
+        newChannel.addOperator(client); // first user becomes admin
+        _channelMap[chanName] = newChannel;
+    }
+
+    Channel chan = _channelMap[chanName];
+
+    // add client
+    chan.addMember(client);
+    client.addChannel(chan);
+
+    // send to everyone in channel a message
+    std::string joinMsg = ":" + client.getPrefix() + " JOIN :" + chanName + "\r\n";
+    broadcastToChannel(client, chan, joinMsg);
+
+    // TODO: send a list of names in the channel (RPL_NAMREPLY 353)
+    //  sendResponse(client, ":" + _serverName + " 353 " + client.getNickname() + " = " + chanName + " :" + chan.getMemberListAsString() + "\r\n");
+    //  sendResponse(client, ":" + _serverName + " 366 " + client.getNickname() + " " + chanName + " :End of /NAMES list\r\n");
 }
 
 void Server::handlePing(Client &client, const IrcMsg &msg)

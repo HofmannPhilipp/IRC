@@ -29,7 +29,7 @@ private:
     std::string _password;
     int _server_fd;
     std::vector<Client> _clients;
-    std::vector<Channel> _channelList;
+    std::map<std::string, Channel> _channelMap;
     std::vector<pollfd> _poll_fds;
 
 public:
@@ -52,10 +52,8 @@ public:
     void run();
 
     std::string getPassword() const;
-    Channel &getChannel(const std::string &name);
-    Client &getClientByNick(const std::string &nick);
-    const std::string getOperatorPassword() const;
-    std::string getOperatorName() const;
+    Channel &getChannelByName(const std::string &name);
+    std::vector<Channel> getChannelsByTopic(const std::string &topic); // TODO:
 
     void setPassword(std::string pass);
 
@@ -84,7 +82,6 @@ public:
     void handlePing(Client &client, const IrcMsg &msg);
 
     void broadcastToChannel(const Client &client, Channel &channel, const std::string &msg);
-    bool channelExists(const std::string &name) const;
 
     void connectClient();
     void disconnectClient(Client &client);
