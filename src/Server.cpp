@@ -115,7 +115,6 @@ void Server::run()
                         std::cout << "Client: " << msg << "\n";
                         IrcMsg request;
                         request.create(msg.substr(0, pos + 2));
-                        std::cout << request << std::endl;
                         handleRequest(currClient, request);
                         msg = msg.substr(pos + 2);
                     }
