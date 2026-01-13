@@ -3,13 +3,12 @@
 #include "commandUtils.hpp"
 
 void Server::handleMode(Client &client, const IrcMsg &msg)
-{   
-    //MODE #channel <modestring> [modeparams...] bswp: MODE #channelName +it 
-    //msg.get_cmd()      == "MODE"
-    //msg.get_params()   == { "#test", "+i" }
+{
+    // MODE #channel <modestring> [modeparams...] bswp: MODE #channelName +it
+    // msg.get_cmd()      == "MODE"
+    // msg.get_params()   == { "#test", "+i" }
 
-
-    //1. genug Parameter?
+    // 1. genug Parameter?
 
     const std::vector<std::string> &params = msg.get_params();
 
@@ -28,7 +27,7 @@ void Server::handleMode(Client &client, const IrcMsg &msg)
         // sendResponse(client, ":" + _serverName + " 403 " + channelName + " :No such channel\r\n");
         return; // ERR_NOSUCHCHANNEL
     }
-    
+
     Channel &channel = _channels[channelName];
 
     // 3. Client ist Operator?
@@ -45,7 +44,7 @@ void Server::handleMode(Client &client, const IrcMsg &msg)
     bool adding = true;
     size_t paramIndex = 2;
 
-    //TO DO: WENN MINUS KEIN PARAMS > 2?
+    // TO DO: WENN MINUS KEIN PARAMS > 2?
 
     for (size_t i = 0; i < modeStr.size(); ++i)
     {
@@ -63,52 +62,53 @@ void Server::handleMode(Client &client, const IrcMsg &msg)
         }
         switch (c)
         {
-            case 'i':
-                channel.setInviteOnly(adding);
-                break;
+        case 'i':
+            channel.setInviteOnly(adding);
+            break;
 
-            case 't':
-                channel.setTopicProtected(adding);
-                break;
+        case 't':
+            channel.setTopicProtected(adding);
+            break;
 
-            case 'k':
-                if (adding)
+        case 'k':
+            if (adding)
+            {
+                if (paramIndex >= params.size())
+                    break;
+                if (!channel.isPasswordSet())
                 {
-                    if (paramIndex >= params.size())
-                        break;kt nur bei Broadcast
-                    if(!channel.isPasswordSet())
-                    {
-                        channel.setPassword(params[paramIndex]);
-                    }
-                    else
-                        //467
-                    paramIndex++;kt nur bei Broadcast
+                    channel.setPassword(params[paramIndex]);
                 }
                 else
-                    channel.clearPassword();
-                break;
+                    // 467
+                    paramIndex++;
+            }
+            else
+                channel.clearPassword();
+            break;
 
-            case 'l':
-                if (adding)
-                {
-                    if (paramIndex >= params.size())
-                        break;
-                    int limit = std::atoi(params[paramIndex++].c_str());
-                    if (limit < 0) limit = 0;
-                    if (limit > 100) limit = 100;
-                    channel.setLimit(limit);
-                }
-                else
-                    channel.clearUserLimit();
-                break;
-            default:
-                // sendResponse(client, ":" + _serverName + " 472 " + c + " :is unknown mode char to me\r\n");
-                break;
+        case 'l':
+            if (adding)
+            {
+                if (paramIndex >= params.size())
+                    break;
+                int limit = std::atoi(params[paramIndex++].c_str());
+                if (limit < 0)
+                    limit = 0;
+                if (limit > 100)
+                    limit = 100;
+                channel.setLimit(limit);
+            }
+            else
+                channel.clearUserLimit();
+            break;
+        default:
+            // sendResponse(client, ":" + _serverName + " 472 " + c + " :is unknown mode char to me\r\n");
+            break;
         }
     }
-    //MODE ANEDERUNGEN BROADCASTEN: IRC KONFORM: :nick!user@host MODE #chan +kl geheim 10
-    std::string response = ":" + client.getPrefix()
-        + " MODE " + channelName;
+    // MODE ANEDERUNGEN BROADCASTEN: IRC KONFORM: :nick!user@host MODE #chan +kl geheim 10
+    std::string response = ":" + client.getPrefix() + " MODE " + channelName;
     for (size_t i = 1; i < params.size(); ++i)
         response += " " + params[i];
 
@@ -121,7 +121,7 @@ void Server::handleTopic(Client &client, const IrcMsg &msg)
 
     if (params.size() < 1)
     {
-        //461
+        // 461
         return;
     }
     const std::string &channelName = params[0];
@@ -133,10 +133,10 @@ void Server::handleTopic(Client &client, const IrcMsg &msg)
     }
     Channel &channel = _channels[channelName];
 
-    if(!channel.isMember(client.getNickname()))
+    if (!channel.isMember(client.getNickname()))
     {
 
-        //442
+        // 442
         return;
     }
 
@@ -145,39 +145,36 @@ void Server::handleTopic(Client &client, const IrcMsg &msg)
         if (channel.getTopic().empty())
         {
             sendResponse(
-            client,
-            ":" + _serverName + " 331 " + client.getNickname() +
-            " " + channel.getName() +
-            " :No topic is set"
-            );
+                client,
+                ":" + _serverName + " 331 " + client.getNickname() +
+                    " " + channel.getName() +
+                    " :No topic is set");
         }
         else
         {
             sendResponse(
-            client,
-            ":" + _serverName + " 332 " + client.getNickname() +
-            " " + channel.getName() +
-            " :" + channel.getTopic()
-            );
+                client,
+                ":" + _serverName + " 332 " + client.getNickname() +
+                    " " + channel.getName() +
+                    " :" + channel.getTopic());
         }
-        return; 
+        return;
     }
 
     if (channel.isTopicProtected() && !channel.isOperator(client))
     {
-        //482 not operator
+        // 482 not operator
         return;
     }
     std::string newTopic = params[1];
-    if(!newTopic.empty() && newTopic[0] == ':')
+    if (!newTopic.empty() && newTopic[0] == ':')
     {
-        newTopic.erase(0,1);
+        newTopic.erase(0, 1);
     }
 
     channel.setTopic(newTopic);
 
-    std::string response = ":" + client.getPrefix()
-    + " TOPIC " + channelName + " :" + newTopic;
+    std::string response = ":" + client.getPrefix() + " TOPIC " + channelName + " :" + newTopic;
 
     broadcastToChannel(client, channel, response);
 }
