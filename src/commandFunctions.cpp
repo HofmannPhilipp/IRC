@@ -263,6 +263,7 @@ void Server::handleTopic(Client &client, const IrcMsg &msg)
     broadcastToChannel(client, channel, response);
 }
 
+
 // void Server::handleMode(Client &client, const IrcMsg &msg)
 // {
 //     // MODE <channel> <modes> [parameters]
