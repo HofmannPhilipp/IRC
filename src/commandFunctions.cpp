@@ -167,7 +167,12 @@ void Server::handleMode(Client &client, const IrcMsg &msg)
                 {
                     if (paramIndex >= params.size())
                         break;
-                    channel.setPassword(params[paramIndex]);
+                    if(!channel.isPasswordSet())
+                    {
+                        channel.setPassword(params[paramIndex]);
+                    }
+                    else
+                        //467
                     paramIndex++;
                 }
                 else

@@ -64,10 +64,12 @@ void Channel::setTopicProtected(bool topicProtected)
 void Channel::clearPassword()
 {
     _passwordSet = false;
+    _password = "";
 }
 
 void Channel::setPassword(const std::string password)
 {
+    _passwordSet = true;
     _password = password;
 }
 
