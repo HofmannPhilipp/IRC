@@ -183,11 +183,11 @@ void Server::handleUser(Client &client, const IrcMsg &msg)
         sendWelcomeMessage(client);
 }
 
-void Server::handleMode(Client &client, const IrcMsg &msg)
-{
-    std::cout << client << std::endl;
-    std::cout << msg << std::endl;
-}
+// void Server::handleMode(Client &client, const IrcMsg &msg)
+// {
+//     std::cout << client << std::endl;
+//     std::cout << msg << std::endl;
+// }
 
 void Server::handleQuit(Client &client, const IrcMsg &msg)
 {

@@ -4,7 +4,7 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -I./inc
 
 VPATH = ./src
 
-SRCS = main.cpp Server.cpp Client.cpp Channel.cpp IrcMsg.cpp handler.cpp ServerUtils.cpp
+SRCS = main.cpp Server.cpp Client.cpp Channel.cpp IrcMsg.cpp handler.cpp ServerUtils.cpp commandFunctions.cpp
 OBJS_DIR = objects
 OBJS = $(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
 
