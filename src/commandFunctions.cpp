@@ -184,3 +184,53 @@ void Server::handleTopic(Client &client, const IrcMsg &msg)
             " :" + channel.getTopic() + "\r\n");
     broadcastToChannel(client, channel, response);
 }
+
+void Server::handleNames(Client &client, const IrcMsg &msg)
+{
+    const std::vector<std::string> &params = msg.get_params();
+    if (params.empty())
+        return;
+
+    const std::string &channelName = params[0];
+
+    if (_channels.find(channelName) == _channels.end())
+    {
+        // Optional: ERR_NOSUCHCHANNEL
+        // sendResponse(client, ":" + _serverName + " 403 " + client.getNickname() + " " + channelName + " :No such channel\r\n");
+        return;
+    }
+
+    Channel &channel = _channels[channelName];
+
+    std::string names;
+    for (auto it = channel.getMembers().begin(); it != channel.getMembers().end(); ++it)
+    {
+        const Client *member = *it;
+
+        if (channel.isOperator(*member))
+            names += "@";
+        // else if (channel.hasVoice(*member))
+        //     names += "+";
+
+        names += member->getNickname();
+        names += " ";
+    }
+
+    // 3. 353 RPL_NAMREPLY senden
+    std::string reply =
+        ":" + _serverName +
+        " 353 " + client.getNickname() +
+        " = " + channelName +
+        " :" + names + "\r\n";
+
+    sendResponse(client, reply);
+
+    // 4. 366 RPL_ENDOFNAMES senden
+    std::string end =
+        ":" + _serverName +
+        " 366 " + client.getNickname() +
+        " " + channelName +
+        " :End of /NAMES list.\r\n";
+
+    sendResponse(client, end);
+}
