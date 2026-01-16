@@ -35,12 +35,23 @@ Channel &Channel::operator=(const Channel &other)
 
 Channel::~Channel() {}
 
-bool Channel::isMember(const std::string &name)
+bool Channel::isMember(const std::string &name) const
 {
 
     for (Client *c : _members)
     {
         if (c->getNickname() == name)
+            return true;
+    }
+    return false;
+}
+
+bool Channel::isMember(const Client &client) const
+{
+
+    for (Client *c : _members)
+    {
+        if (c->getNickname() == client.getNickname())
             return true;
     }
     return false;
@@ -98,6 +109,11 @@ void Channel::addMember(Client *member)
             return; // TODO: EXCEPTION
     }
     _members.push_back(member);
+}
+
+void Channel::invite(Client *client)
+{
+    _invites.insert(client);
 }
 
 bool Channel::isOperator(const Client &client) const

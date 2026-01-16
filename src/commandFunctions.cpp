@@ -117,70 +117,70 @@ void Server::handleMode(Client &client, const IrcMsg &msg)
     sendResponse(client, response);
 }
 
-void Server::handleTopic(Client &client, const IrcMsg &msg)
-{
-    const std::vector<std::string> &params = msg.get_params();
+// void Server::handleTopic(Client &client, const IrcMsg &msg)
+// {
+//     const std::vector<std::string> &params = msg.get_params();
 
-    if (params.size() < 1)
-    {
-        // 461
-        return;
-    }
-    const std::string &channelName = params[0];
+//     if (params.size() < 1)
+//     {
+//         // 461
+//         return;
+//     }
+//     const std::string &channelName = params[0];
 
-    if (_channels.find(channelName) == _channels.end())
-    {
-        // sendResponse(client, ":" + _serverName + " 403 " + channelName + " :No such channel\r\n");
-        return; // ERR_NOSUCHCHANNEL
-    }
-    Channel &channel = _channels[channelName];
+//     if (_channels.find(channelName) == _channels.end())
+//     {
+//         // sendResponse(client, ":" + _serverName + " 403 " + channelName + " :No such channel\r\n");
+//         return; // ERR_NOSUCHCHANNEL
+//     }
+//     Channel &channel = _channels[channelName];
 
-    if (!channel.isMember(client.getNickname()))
-    {
+//     if (!channel.isMember(client.getNickname()))
+//     {
 
-        // 442
-        return;
-    }
+//         // 442
+//         return;
+//     }
 
-    if (params.size() == 1)
-    {
-        if (channel.getTopic().empty())
-        {
-            sendResponse(
-                client,
-                ":" + _serverName + " 331 " + client.getNickname() +
-                    " " + channel.getName() +
-                    " :No topic is set\r\n");
-        }
-        else
-        {
-            sendResponse(
-                client,
-                ":" + _serverName + " 332 " + client.getNickname() +
-                    " " + channel.getName() +
-                    " :" + channel.getTopic() + "\r\n");
-        }
-        return;
-    }
+//     if (params.size() == 1)
+//     {
+//         if (channel.getTopic().empty())
+//         {
+//             sendResponse(
+//                 client,
+//                 ":" + _serverName + " 331 " + client.getNickname() +
+//                     " " + channel.getName() +
+//                     " :No topic is set\r\n");
+//         }
+//         else
+//         {
+//             sendResponse(
+//                 client,
+//                 ":" + _serverName + " 332 " + client.getNickname() +
+//                     " " + channel.getName() +
+//                     " :" + channel.getTopic() + "\r\n");
+//         }
+//         return;
+//     }
 
-    if (channel.isTopicProtected() && !channel.isOperator(client))
-    {
-        // 482 not operator
-        return;
-    }
-    std::string newTopic = params[1];
-    if (!newTopic.empty() && newTopic[0] == ':')
-    {
-        newTopic.erase(0, 1);
-    }
-    channel.setTopic(newTopic);
+//     if (channel.isTopicProtected() && !channel.isOperator(client))
+//     {
+//         // 482 not operator
+//         return;
+//     }
+//     std::string newTopic = params[1];
+//     if (!newTopic.empty() && newTopic[0] == ':')
+//     {
+//         newTopic.erase(0, 1);
+//     }
+//     channel.setTopic(newTopic);
 
-    std::string response = ":" + client.getPrefix() + " TOPIC " + channelName + " :" + newTopic + "\r\n";
+//     std::string response = ":" + client.getPrefix() + " TOPIC " + channelName + " :" + newTopic + "\r\n";
 
-    sendResponse(
-        client,
-        ":" + _serverName + " 332 " + client.getNickname() +
-            " " + channel.getName() +
-            " :" + channel.getTopic() + "\r\n");
-    broadcastToChannel(client, channel, response);
-}
+//     sendResponse(
+//         client,
+//         ":" + _serverName + " 332 " + client.getNickname() +
+//             " " + channel.getName() +
+//             " :" + channel.getTopic() + "\r\n");
+//     broadcastToChannel(client, channel, response);
+// }
