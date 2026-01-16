@@ -35,6 +35,7 @@ public:
 
     void addOperator(Client *client);
     void addMember(Client *client);
+    void invite(Client *client);
 
     void removeMember(const Client &client);
 
@@ -45,7 +46,8 @@ public:
     const std::vector<Client *> &getOperators() const;
     size_t getUserLimit() const;
 
-    bool isMember(const std::string &name);
+    bool isMember(const std::string &name) const;
+    bool isMember(const Client &client) const;
     bool isOperator(const Client &client) const;
     bool isPasswordSet() const;
     bool isTopicProtected() const;

@@ -56,7 +56,7 @@ public:
 
     std::string getPassword() const;
     Channel &getChannelByName(const std::string &name);
-    const Client &getClientByNick(const std::string &nickname) const;
+    Client &getClientByNick(const std::string &nickname);
     size_t getChannelLimit() const;
     size_t getClientLimit() const;
 
@@ -81,6 +81,7 @@ public:
     void handleQuit(Client &client, const IrcMsg &msg);
     void handleJoin(Client &client, const IrcMsg &msg);
     void handleTopic(Client &client, const IrcMsg &msg);
+    void handleInvite(Client &client, const IrcMsg &msg);
     void handleKick(Client &client, const IrcMsg &msg);
     void handlePrivMsg(Client &client, const IrcMsg &msg);
     void handleNotice(Client &client, const IrcMsg &msg);

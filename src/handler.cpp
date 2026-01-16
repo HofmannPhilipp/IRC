@@ -22,6 +22,7 @@ void Server::handleRequest(Client &client, const IrcMsg &msg)
 
         {"JOIN", &Server::handleJoin},
         {"TOPIC", &Server::handleTopic},
+        {"INVITE", &Server::handleInvite},
         // {"KICK", &Server::handleKick},
 
         {"PRIVMSG", &Server::handlePrivMsg},
@@ -397,4 +398,124 @@ void Server::handlePrivMsg(Client &client, const IrcMsg &msg)
             continue;
         }
     }
+}
+
+// Command: INVITE
+// Parameters : <nickname> <channel>
+void Server::handleInvite(Client &client, const IrcMsg &msg)
+{
+    std::vector<std::string> inviteParams = msg.get_params();
+
+    // if (inviteParams.size() != 2)
+    // {
+    //     return;
+    // }
+    std::cout << msg.get_msg() << std::endl;
+    const std::string &nickname = inviteParams[0];
+    const std::string &channelName = inviteParams[1];
+
+    // 401 ERR_NOSUCHNICK
+    if (!isNickUsed(nickname))
+    {
+        std::string reply = ":" + _serverName + " 401 " + client.getNickname() + " " + nickname + " :No such nick/Name\r\n";
+        sendResponse(client, reply);
+        return;
+    }
+
+    Client &invitedClient = getClientByNick(nickname);
+
+    // 403 ERR_NOSUCHCHANNEL
+    std::map<std::string, Channel>::iterator it = _channels.find(channelName);
+    if (it == _channels.end())
+    {
+        std::string reply = ":" + _serverName + " 403 " + client.getNickname() + " " + channelName + " :No such channel\r\n";
+        sendResponse(client, reply);
+        return;
+    }
+
+    Channel &channel = it->second;
+
+    // 442 ERR_NOTONCHANNEL
+    if (!channel.isMember(client))
+    {
+        std::string reply = ":" + _serverName + " 442 " + client.getNickname() + " " + channelName + " :You're not on that channel\r\n";
+        sendResponse(client, reply);
+        return;
+    }
+
+    // 443 ERR_USERONCHANNEL
+    // TODO: maybe check if invitedCLient is operator
+    if (channel.isMember(invitedClient))
+    {
+        std::string reply = ":" + _serverName + " 443 " + client.getNickname() + " " + nickname + " " + channelName + " :is already on channel\r\n";
+        sendResponse(client, reply);
+        return;
+    }
+
+    // 482 ERR_CHANOPRIVSNEEDED
+    if (!channel.isOperator(client))
+    {
+        std::string reply = ":" + _serverName + " 443 " + client.getNickname() + " " + channelName + " :You're not channel operator\r\n";
+        sendResponse(client, reply);
+        return;
+    }
+    channel.invite(&invitedClient);
+    // 341 RPL_INVITING
+    std::string reply = ":" + _serverName + " 341 " + client.getNickname() + " " + nickname + " " + channelName + "\r\n";
+    sendResponse(client, reply);
+
+    reply = ":" + client.getPrefix() + " INVITE " + nickname + " :" + channelName + "\r\n";
+    sendResponse(invitedClient, reply);
+}
+
+void Server::handleTopic(Client &client, const IrcMsg &msg)
+{
+    const std::vector<std::string> &params = msg.get_params();
+
+    if (params.size() < 1)
+    {
+        sendResponse(client, ":" + _serverName + " 461 " + client.getNickname() + " TOPIC :Not enough parameters\r\n");
+        return;
+    }
+
+    const std::string &channelName = params[0];
+    if (_channels.find(channelName) == _channels.end())
+    {
+        sendResponse(client, ":" + _serverName + " 403 " + client.getNickname() + " " + channelName + " :No such channel\r\n");
+        return;
+    }
+
+    Channel &channel = _channels[channelName];
+    if (!channel.isMember(client.getNickname()))
+    {
+        sendResponse(client, ":" + _serverName + " 442 " + client.getNickname() + " " + channelName + " :You're not on that channel\r\n");
+        return;
+    }
+
+    if (params.size() == 1)
+    {
+        if (channel.getTopic().empty())
+        {
+            sendResponse(client, ":" + _serverName + " 331 " + client.getNickname() + " " + channelName + " :No topic is set\r\n");
+        }
+        else
+        {
+            sendResponse(client, ":" + _serverName + " 332 " + client.getNickname() + " " + channelName + " :" + channel.getTopic() + "\r\n");
+        }
+        return;
+    }
+
+    if (channel.isTopicProtected() && !channel.isOperator(client))
+    {
+        sendResponse(client, ":" + _serverName + " 482 " + client.getNickname() + " " + channelName + " :You're not channel operator\r\n");
+        return;
+    }
+
+    std::string newTopic = params[1];
+
+    channel.setTopic(newTopic);
+    std::string response = ":" + client.getPrefix() + " TOPIC " + channelName + " :" + newTopic + "\r\n";
+
+    broadcastToChannel(client, channel, response);
+    sendResponse(client, response);
 }

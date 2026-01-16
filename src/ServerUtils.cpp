@@ -7,10 +7,10 @@
 //     return _channelMap[name];
 // }
 
-const Client &Server::getClientByNick(const std::string &nickname) const
+Client &Server::getClientByNick(const std::string &nickname)
 {
 
-    for (const std::pair<const int, Client> &pair : _clients)
+    for (std::pair<const int, Client> &pair : _clients)
     {
         if (pair.second.getNickname() == nickname)
             return pair.second;
