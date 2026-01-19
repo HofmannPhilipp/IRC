@@ -87,6 +87,7 @@ public:
     void handleNotice(Client &client, const IrcMsg &msg);
     void handlePing(Client &client, const IrcMsg &msg);
     void handleNames(Client &client, const IrcMsg &msg);
+    void handleWho(Client &client, const IrcMsg &msg);
 
     void broadcastToChannel(const Client &client, Channel &channel, const std::string &msg);
 

@@ -28,7 +28,8 @@ void Server::handleRequest(Client &client, const IrcMsg &msg)
         {"PRIVMSG", &Server::handlePrivMsg},
         // {"NOTICE", &Server::handleNotice}
         {"PING", &Server::handlePing},
-        {"NAMES", &Server::handleNames}};
+        {"NAMES", &Server::handleNames},
+        {"WHO", &Server::handleWho}};
 
     auto it = functions.find(cmd);
     if (it != functions.end())
@@ -466,4 +467,35 @@ void Server::handleInvite(Client &client, const IrcMsg &msg)
 
     reply = ":" + client.getPrefix() + " INVITE " + nickname + " :" + channelName + "\r\n";
     sendResponse(invitedClient, reply);
+}
+
+void Server::handleWho(Client &client, const IrcMsg &msg)
+{
+    if (msg.get_params().empty())
+        return;
+
+    std::string target = msg.get_params()[0];
+
+    if (target[0] == '#' || target[0] == '&')
+    {
+        auto it = _channels.find(target);
+
+        if (it == _channels.end())
+        {
+            sendResponse(client, ":" + _serverName + " 315 " + client.getNickname() + " " + target + " :End of WHO list\r\n");
+            return;
+        }
+        Channel &chan = it->second;
+        for (Client *member : chan.getMembers())
+        {
+            // 352 RPL_WHOREPLY
+            std::string reply = ":" + _serverName + " 352 " + client.getNickname() + " " +
+                                target + " " + member->getUsername() + " " +
+                                member->getHostname() + " " + _serverName + " " +
+                                member->getNickname() + " H :0 " + member->getRealname() + "\r\n";
+            sendResponse(client, reply);
+        }
+    }
+
+    sendResponse(client, ":" + _serverName + " 315 " + client.getNickname() + " " + target + " :End of WHO list\r\n");
 }
