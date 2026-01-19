@@ -23,7 +23,7 @@ void Server::handleRequest(Client &client, const IrcMsg &msg)
         {"JOIN", &Server::handleJoin},
         {"TOPIC", &Server::handleTopic},
         {"INVITE", &Server::handleInvite},
-        // {"KICK", &Server::handleKick},
+        {"KICK", &Server::handleKick},
 
         {"PRIVMSG", &Server::handlePrivMsg},
         // {"NOTICE", &Server::handleNotice}

@@ -310,6 +310,7 @@ void Server::handleKick(Client &client, const IrcMsg &msg)
         " :" + comment + "\r\n";
     
     broadcastToChannel(client, channel, kickMsg);
+    sendResponse(client, kickMsg);
 
     channel.removeMember(*target);
 
