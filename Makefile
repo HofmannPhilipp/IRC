@@ -25,7 +25,8 @@ SRCS = main.cpp Server.cpp ServerUtils.cpp  Client.cpp Channel.cpp IrcMsg.cpp  \
 	WhoCommand.cpp \
 	PingCommand.cpp \
 	QuitCommand.cpp \
-	TopicCommand.cpp
+	TopicCommand.cpp \
+	PartCommand.cpp
 
 OBJS_DIR = objects
 OBJS = $(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
