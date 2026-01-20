@@ -1,12 +1,36 @@
 NAME = server
 CXX = c++
-CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -I./inc
+INCLUDES = \
+	-I./inc \
+	-I./inc/server \
+	-I./inc/commands \
+	-I./inc/client \
+	-I./inc/channel \
+	-I./inc/protocol
 
-VPATH = ./src
+VPATH = ./src ./src/server ./src/commands ./src/client ./src/channel ./src/protocol
 
-SRCS = main.cpp Server.cpp Client.cpp Channel.cpp IrcMsg.cpp handler.cpp ServerUtils.cpp commandFunctions.cpp
+SRCS = main.cpp Server.cpp ServerUtils.cpp  Client.cpp Channel.cpp IrcMsg.cpp  \
+	CommandDispatcher.cpp \
+	CapCommand.cpp \
+	PassCommand.cpp \
+	UserCommand.cpp \
+	JoinCommand.cpp \
+	NickCommand.cpp \
+	PrivMsgCommand.cpp \
+	KickCommand.cpp \
+	InviteCommand.cpp \
+	ModeCommand.cpp \
+	NamesCommand.cpp \
+	WhoCommand.cpp \
+	PingCommand.cpp \
+	QuitCommand.cpp \
+	TopicCommand.cpp
+
 OBJS_DIR = objects
 OBJS = $(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
+
+CXXFLAGS = -std=c++17 -Wall -Wextra -Werror $(INCLUDES)
 
 all: $(NAME)
 

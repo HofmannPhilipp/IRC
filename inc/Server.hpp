@@ -4,6 +4,7 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "IrcMsg.hpp"
+#include "CommandDispatcher.hpp"
 
 #include <cstring>
 #include <iostream>
@@ -34,6 +35,7 @@ private:
     std::vector<pollfd> _poll_fds;
     int _channelLimit;
     int _clientLimit;
+    CommandDispatcher _commands;
 
 public:
     class ServerException : public std::exception
@@ -54,8 +56,10 @@ public:
     void init(int domain);
     void run();
 
+    std::string getServerName() const;
     std::string getPassword() const;
     Channel &getChannelByName(const std::string &name);
+    std::map<std::string, Channel> &getChannels();
     Client &getClientByNick(const std::string &nickname);
     size_t getChannelLimit() const;
     size_t getClientLimit() const;
@@ -71,24 +75,6 @@ public:
     void sendWelcomeMessage(const Client &client) const;
 
     void handleRequest(Client &client, const IrcMsg &msg);
-    void handleCap(Client &client, const IrcMsg &msg);
-    void handlePass(Client &client, const IrcMsg &msg);
-    void handleNick(Client &client, const IrcMsg &msg);
-    void handleUser(Client &client, const IrcMsg &msg);
-    void handleClient(Client &client, const IrcMsg &msg);
-    void handleOper(Client &client, const IrcMsg &msg);
-    void handleMode(Client &client, const IrcMsg &msg);
-    void handleQuit(Client &client, const IrcMsg &msg);
-    void handleJoin(Client &client, const IrcMsg &msg);
-    void handleTopic(Client &client, const IrcMsg &msg);
-    void handleInvite(Client &client, const IrcMsg &msg);
-    void handleKick(Client &client, const IrcMsg &msg);
-    void handlePrivMsg(Client &client, const IrcMsg &msg);
-    void handleNotice(Client &client, const IrcMsg &msg);
-    void handlePing(Client &client, const IrcMsg &msg);
-    void handleNames(Client &client, const IrcMsg &msg);
-    void handleWho(Client &client, const IrcMsg &msg);
-    void handlePart(Client &client, const IrcMsg &msg);
 
     void broadcastToChannel(const Client &client, Channel &channel, const std::string &msg);
 
