@@ -5,7 +5,8 @@ Server::Server(const std::string &severName, int port, const std::string &passwo
                                                                                       _serverPrefix(":" + severName + " "),
                                                                                       _port(port),
                                                                                       _password(password),
-                                                                                      _server_fd(-1)
+                                                                                      _server_fd(-1),
+                                                                                      _channelLimit(100)
 {
     std::fill(_poll_fds.begin(), _poll_fds.end(), pollfd{});
 }
@@ -217,4 +218,9 @@ void Server::disconnectClient(Client &client)
     std::cout << client << std::endl;
     // TODO: close client_fd here or in Client destructor ??
     _poll_fds.erase(poll_it);
+}
+
+void Server::handleRequest(Client &client, const IrcMsg &msg)
+{
+    _commands.dispatch(client, *this, msg);
 }

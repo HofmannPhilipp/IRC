@@ -7,6 +7,11 @@
 //     return _channelMap[name];
 // }
 
+std::map<std::string, Channel> &Server::getChannels()
+{
+    return _channels;
+}
+
 Client &Server::getClientByNick(const std::string &nickname)
 {
 
@@ -17,6 +22,11 @@ Client &Server::getClientByNick(const std::string &nickname)
     }
 
     throw ServerException("Err: Nickname not found");
+}
+
+std::string Server::getServerName() const
+{
+    return _serverName;
 }
 
 std::string Server::getPassword() const
