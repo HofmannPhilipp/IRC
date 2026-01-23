@@ -60,6 +60,13 @@ void Server::init(int domain)
     // AF_INET (Ipv4), SOCK_STREAM (TCP), 0 (Default) => TCP
     _server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
+    int opt = 1;
+    // SO_REUSEADDR allows immediately reconnection to port
+    if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+    {
+        throw ServerException("setsockopt(SO_REUSEADDR) failed");
+    }
+
     if (_server_fd < 0)
         throw ServerException("Failed to create socket");
 
