@@ -11,6 +11,7 @@ void Server::connectClient(void)
     if (client_fd < 0)
         throw ServerException("Error client accept");
 
+    fcntl(client_fd, F_SETFL, O_NONBLOCK); // sets socket to be non blocking
     char hostname[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &client_addr.sin_addr, hostname, INET_ADDRSTRLEN);
 
@@ -58,20 +59,30 @@ void Server::run()
         if (ret == 0) // poll timeout expired
             continue;
 
-        if (_polls[0].revents & POLLIN) // TODO: check for more poll flags
-            connectClient();
+        if (_polls[0].revents & (POLLIN | POLLERR))
+        {
+            if (_polls[0].revents & POLLIN)
+                connectClient();
+            else
+                throw ServerException("Listening socket error");
+        }
 
         for (size_t i = _polls.size() - 1; i >= 1; i--)
         {
             if (!server_running)
                 break;
-            if (_polls[i].revents & POLLIN)
+            if (_polls[i].revents & (POLLIN | POLLHUP | POLLERR | POLLNVAL))
             {
                 Client *client = _state.getClientByFd(_polls[i].fd);
-                if (!client)
+                if (!client || (_polls[i].revents & POLLNVAL))
                 {
-                    std::cerr << "Client with fd: " << _polls[i].fd << " does not exist!" << std::endl;
+                    std::cerr << "Invalid or missing client for fd: " << _polls[i].fd << std::endl;
                     _polls.erase(_polls.begin() + i);
+                    continue;
+                }
+                if ((_polls[i].revents & (POLLERR | POLLHUP)) && !(_polls[i].revents & POLLIN))
+                {
+                    disconnectClient(*client);
                     continue;
                 }
                 std::string data;
@@ -82,6 +93,8 @@ void Server::run()
                         disconnectClient(*client);
                         continue;
                     }
+                    if (errno == EWOULDBLOCK || EAGAIN)
+                        continue;
                     processBuffer(*client, data);
                 }
                 catch (const ServerException &e)
@@ -96,21 +109,22 @@ void Server::run()
             }
         }
     }
-    shutdown("Server shutting down");
-    std::cout << "\nserver closed..." << std::endl;
+    // std::cout << "\nserver closed..." << std::endl;
 }
 
-void Server::processBuffer(Client &client, std::string &buffer)
+void Server::processBuffer(Client &client, std::string &data)
 {
+    if (data.empty())
+        return;
     size_t pos;
-    while ((pos = buffer.find("\r\n")) != std::string::npos)
+    while ((pos = data.find("\r\n")) != std::string::npos)
     {
-        std::string raw = buffer.substr(0, pos + 2);
-        buffer.erase(0, pos + 2);
+        std::string line = data.substr(0, pos + 2);
+        data.erase(0, pos + 2);
 
         IrcMsg msg;
-        msg.create(raw);
-        std::cout << "[" << client.getFd() << "]{" << client.getUsername() << "} : " << raw << "\n";
+        msg.create(line);
+        std::cout << "[" << client.getFd() << "]{" << client.getUsername() << "} : " << line << "\n";
         handleRequest(client, msg);
     }
 }
