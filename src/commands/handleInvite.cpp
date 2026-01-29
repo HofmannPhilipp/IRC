@@ -6,22 +6,23 @@
 // Parameters : <nickname> <channel>
 void handleInvite(Client &client, Server &server, const IrcMsg &msg)
 {
-    std::vector<std::string> inviteParams = msg.get_params();
+    std::vector<std::string> params = msg.get_params();
 
-    // if (inviteParams.size() != 2)
-    // {
-    //     return;
-    // }
+    if (params.size() < 2)
+    {
+        server.sendMsg(client, ":" + server.getServerName() + " 461 " + client.getNickname() + " INVITE :Not enough parameters\r\n");
+        return;
+    }
+
     ServerState &state = server.getServerState();
-    const std::string &nickname = inviteParams[0];
-    const std::string &channelName = inviteParams[1];
+    const std::string &nickname = params[0];
+    const std::string &channelName = params[1];
 
     Client *invitedClient = state.getClientByNick(nickname);
     // 401 ERR_NOSUCHNICK
     if (!invitedClient)
     {
-        std::string reply = ":" + server.getServerName() + " 401 " + client.getNickname() + " " + nickname + " :No such nick/Name\r\n";
-        server.sendMsg(client, reply);
+        server.sendMsg(client, ":" + server.getServerName() + " 401 " + client.getNickname() + " " + nickname + " :No such nick/Name\r\n");
         return;
     }
 
@@ -29,39 +30,32 @@ void handleInvite(Client &client, Server &server, const IrcMsg &msg)
     Channel *channel = state.getChannel(channelName);
     if (!channel)
     {
-        std::string reply = ":" + server.getServerName() + " 403 " + client.getNickname() + " " + channelName + " :No such channel\r\n";
-        server.sendMsg(client, reply);
+        server.sendMsg(client, ":" + server.getServerName() + " 403 " + client.getNickname() + " " + channelName + " :No such channel\r\n");
         return;
     }
     // 442 ERR_NOTONCHANNEL
     if (!channel->isMember(client))
     {
-        std::string reply = ":" + server.getServerName() + " 442 " + client.getNickname() + " " + channelName + " :You're not on that channel\r\n";
-        server.sendMsg(client, reply);
+        server.sendMsg(client, ":" + server.getServerName() + " 442 " + client.getNickname() + " " + channelName + " :You're not on that channel\r\n");
         return;
     }
 
     // 443 ERR_USERONCHANNEL
-    // TODO: maybe check if invitedCLient is operator
-    if (channel->isMember(*invitedClient))
+    if (channel->isMember(*invitedClient) || channel->isOperator(*invitedClient))
     {
-        std::string reply = ":" + server.getServerName() + " 443 " + client.getNickname() + " " + nickname + " " + channelName + " :is already on channel\r\n";
-        server.sendMsg(client, reply);
+        server.sendMsg(client, ":" + server.getServerName() + " 443 " + client.getNickname() + " " + nickname + " " + channelName + " :is already on channel\r\n");
         return;
     }
 
     // 482 ERR_CHANOPRIVSNEEDED
-    if (!channel->isOperator(client))
+    if (channel->isInviteOnly() && !channel->isOperator(client))
     {
-        std::string reply = ":" + server.getServerName() + " 443 " + client.getNickname() + " " + channelName + " :You're not channel operator\r\n";
-        server.sendMsg(client, reply);
+        server.sendMsg(client, ":" + server.getServerName() + " 482 " + client.getNickname() + " " + channelName + " :You're not channel operator\r\n");
         return;
     }
     channel->invite(invitedClient);
     // 341 RPL_INVITING
-    std::string reply = ":" + server.getServerName() + " 341 " + client.getNickname() + " " + nickname + " " + channelName + "\r\n";
-    server.sendMsg(client, reply);
+    server.sendMsg(client, ":" + server.getServerName() + " 341 " + client.getNickname() + " " + nickname + " " + channelName + "\r\n");
 
-    reply = ":" + client.getPrefix() + " INVITE " + nickname + " :" + channelName + "\r\n";
-    server.sendMsg(*invitedClient, reply);
+    server.sendMsg(*invitedClient, ":" + client.getPrefix() + " INVITE " + nickname + " :" + channelName + "\r\n");
 }
