@@ -9,11 +9,10 @@ static bool isValidChannelName(const std::string &name)
 
     if (name[0] != '#' || name[0] != '&')
         return false;
-    for (size_t i = 0; i < name.length(); ++i)
-    {
-        if (name[i] == ' ' || name[i] == ',' || name[i] == '\a')
-            return false;
-    }
+
+    if (name.find(" ,\a") != std::string::npos)
+        return false;
+
     return true;
 }
 

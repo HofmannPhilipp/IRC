@@ -21,7 +21,6 @@ Channel::Channel(const std::string &name)
       _userLimitSet(false),
       _userlimit(0)
 {
-    // TODO: password check channel name check topic check
 }
 Channel::Channel(const std::string &name, const std::string &password)
     : _name(name),
@@ -33,7 +32,6 @@ Channel::Channel(const std::string &name, const std::string &password)
       _userLimitSet(false),
       _userlimit(0)
 {
-    // TODO: password check channel name check topic check
 }
 
 Channel::Channel(const Channel &other)
