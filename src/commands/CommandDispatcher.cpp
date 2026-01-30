@@ -18,6 +18,7 @@ CommandDispatcher::CommandDispatcher()
     registerCommand("USER", handleUser);
     registerCommand("WHO", handleWho);
     registerCommand("PART", handlePart);
+    registerCommand("NOTICE", handleNotice);
 }
 
 void CommandDispatcher::registerCommand(const std::string &name, handlerFunc cmd)
