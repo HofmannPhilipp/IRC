@@ -26,7 +26,8 @@ SRCS = main.cpp Server.cpp ServerIO.cpp ServerLoop.cpp ServerState.cpp  Client.c
 	handlePing.cpp \
 	handleQuit.cpp \
 	handleTopic.cpp \
-	handlePart.cpp
+	handlePart.cpp \
+	handleNotice.cpp
 
 OBJS_DIR = objects
 OBJS = $(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))

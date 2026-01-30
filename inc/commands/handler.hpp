@@ -20,3 +20,4 @@ void handleQuit(Client &client, Server &server, const IrcMsg &msg);
 void handleTopic(Client &client, Server &server, const IrcMsg &msg);
 void handleUser(Client &client, Server &server, const IrcMsg &msg);
 void handleWho(Client &client, Server &server, const IrcMsg &msg);
+void handleNotice(Client &client, Server &server, const IrcMsg &msg);
