@@ -96,7 +96,7 @@ void Server::run()
                         disconnectClient(*client);
                         continue;
                     }
-                    processBuffer(*client, rawData);
+                    processData(*client, rawData);
                 }
                 catch (const ServerException &e)
                 {
@@ -113,7 +113,7 @@ void Server::run()
     // std::cout << "\nserver closed..." << std::endl;
 }
 
-void Server::processBuffer(Client &client, std::string &rawData)
+void Server::processData(Client &client, std::string &rawData)
 {
     client.getBuffer() += rawData;
     std::string &buffer = client.getBuffer();

@@ -54,7 +54,7 @@ public:
     void broadcastToChannel(const Client &client, const Channel &channel, const std::string &msg);
 
     bool receive(int fd, std::string &data);
-    void processBuffer(Client &client, std::string &buffer);
+    void processData(Client &client, std::string &rawData);
     void handleRequest(Client &client, const IrcMsg &msg);
 
     void connectClient();

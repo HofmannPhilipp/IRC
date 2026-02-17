@@ -1,4 +1,4 @@
-NAME = server
+NAME = ircserv
 CXX = c++
 INCLUDES = \
 	-I./inc \
@@ -32,7 +32,7 @@ SRCS = main.cpp Server.cpp ServerIO.cpp ServerLoop.cpp ServerState.cpp  Client.c
 OBJS_DIR = objects
 OBJS = $(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
 
-CXXFLAGS = -std=c++17 -Wall -Wextra -Werror $(INCLUDES) -g -fsanitize=address
+CXXFLAGS = -std=c++17 -Wall -Wextra -Werror $(INCLUDES)
 
 all: $(NAME)
 
