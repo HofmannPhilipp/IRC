@@ -1,4 +1,8 @@
 #include "CommandDispatcher.hpp"
+#include "Server.hpp"
+#include "Client.hpp"
+#include "IrcMsg.hpp"
+#include "handler.hpp"
 
 CommandDispatcher::CommandDispatcher()
 {
@@ -36,6 +40,16 @@ void CommandDispatcher::dispatch(Client &client, Server &server, const IrcMsg &m
         // ERR_UNKNOWNCOMMAND
         std::cout << "Unkown Command" << std::endl;
         return;
+    }
+
+    if (it->first != "NICK" && it->first != "USER" && it->first != "PASS")
+    {
+        if (!client.getIsRegistered())
+        {
+            // ERR_NOTREGISTERED
+            server.sendMsg(client, ":" + server.getServerName() + " 451 * :You have not registered\r\n");
+            return;
+        }
     }
 
     it->second(client, server, msg);

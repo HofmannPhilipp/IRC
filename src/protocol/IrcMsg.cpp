@@ -56,7 +56,10 @@ void IrcMsg::create(const std::string &msg)
     }
 
     if (!is_valid_cmd(token))
+    {
+        std::cerr << "Invalid command: " << msg << std::endl;
         throw InvalidCommand();
+    }
 
     _cmd = token;
     int middle_params = 0;

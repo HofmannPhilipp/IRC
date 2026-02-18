@@ -203,7 +203,7 @@ std::string Client::getPrefix() const
     return _nickname + "!" + _username + "@" + _hostname;
 }
 
-std::string &Client::getBuffer()
+std::string Client::getBuffer()
 {
     return _buffer;
 }
@@ -265,6 +265,20 @@ void Client::setHasNick(bool flag)
 void Client::setHasUser(bool flag)
 {
     _hasUser = flag;
+}
+
+void Client::setBuffer(const std::string &buffer)
+{
+    if (buffer.size() > 512)
+        throw std::overflow_error("Buffer overflow: incoming data exceeds buffer size");
+    _buffer = buffer;
+}
+
+void Client::appendToBuffer(const std::string &data)
+{
+    if (_buffer.size() + data.size() > 512)
+        throw std::overflow_error("Buffer overflow: incoming data exceeds buffer size");
+    _buffer += data;
 }
 
 bool Client::canRegister()
