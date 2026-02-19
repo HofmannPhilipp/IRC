@@ -1,19 +1,40 @@
 #include "Server.hpp"
 
-void Server::sendMsg(const Client &client, const std::string &msg) const
+void Server::sendMsg(Client &client, const std::string &msg)
 {
-    std::cout << "server to client [" << client.getFd() << "]{" << client.getUsername() << "} : " << msg << std::endl;
-    send(client.getFd(), msg.c_str(), msg.size(), 0);
+    if (msg.empty() || msg.size() > sizeof(char) * 512)
+        return;
+    if (client.getFd() < 0)
+        return;
+
+    client.appendToWriteBuffer(msg);
+
+    std::string &output = client.getWriteBuffer();
+    if (output.empty())
+        return;
+
+    std::cout << Color::BLUE << "server to  [" << client.getFd() << "]{" << client.getUsername() << "} : " << output << Color::RESET << std::endl;
+    ssize_t bytesSent = send(client.getFd(), output.data(), output.size(), 0);
+    if (bytesSent < 0)
+    {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+        {
+            pollfd &pfd = getPollByFd(client.getFd());
+            pfd.events |= POLLOUT; // enable POLLOUT to know when we can send again
+            return;
+        }
+        throw ServerException("Failed to send message to client " + client.getNickname() + " (fd: " + std::to_string(client.getFd()) + "): " + std::strerror(errno));
+    }
+    output.erase(0, bytesSent);
+
+    pollfd &pfd = getPollByFd(client.getFd());
+    if (!client.getWriteBuffer().empty())
+        pfd.events |= POLLOUT; // partial write -> keep flushing later
+    else
+        pfd.events &= ~POLLOUT;
 }
 
-void Server::sendMsg(const Client &client, const char *msg) const
-{
-    std::cout << "server to client [" << client.getFd() << "]{" << client.getUsername() << "} : " << msg << std::endl;
-
-    send(client.getFd(), msg, std::strlen(msg), 0);
-}
-
-void Server::sendWelcomeMessage(const Client &client) const
+void Server::sendWelcomeMessage(Client &client)
 {
     std::string msg(":" + _serverName + " 001 " + client.getNickname() + " :Welcome to the IRC Network " + client.getPrefix() + "\r\n");
     sendMsg(client, msg);
@@ -23,7 +44,7 @@ void Server::broadcastToChannel(const Client &client, const Channel &channel, co
 {
     const std::string senderNick = client.getNickname();
 
-    for (const Client *currentClient : channel.getMembers())
+    for (Client *currentClient : channel.getMembers())
     {
         if (currentClient->getNickname() == senderNick)
             continue;
@@ -34,7 +55,7 @@ void Server::broadcastToChannel(const Client &client, const Channel &channel, co
 
 bool Server::receive(int fd, std::string &data)
 {
-    char buffer[512];
+    char buffer[4096];
     std::memset(buffer, 0, sizeof(buffer));
     ssize_t bytes = recv(fd, buffer, sizeof(buffer) - 1, 0);
 
@@ -45,9 +66,35 @@ bool Server::receive(int fd, std::string &data)
     {
         if (errno == EWOULDBLOCK || errno == EAGAIN)
             return true;
-        std::cerr << "Recv error on fd " << fd << ": " << std::strerror(errno) << std::endl;
-        return false;
+        throw ServerException("Failed to receive data from client (fd: " + std::to_string(fd) + "): " + std::strerror(errno));
     }
     data.assign(buffer, bytes);
     return true;
+}
+
+void Server::flushClient(Client &client)
+{
+    static const size_t MAX_FLUSH_BYTES = 64 * 1024; // 64KB pro poll-tick
+    size_t sentTotal = 0;
+    std::string &output = client.getWriteBuffer();
+    while (!output.empty() && sentTotal < MAX_FLUSH_BYTES)
+    {
+        size_t toSend = std::min(output.size(), MAX_FLUSH_BYTES - sentTotal);
+        ssize_t bytesSent = send(client.getFd(), output.data(), toSend, 0);
+        if (bytesSent < 0)
+        {
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+                return; // keep POLLOUT enabled
+            throw ServerException("Failed to flush data to client " + client.getNickname() + " (fd: " + std::to_string(client.getFd()) + "): " + std::strerror(errno));
+        }
+        if (bytesSent == 0)
+            break;
+        sentTotal += bytesSent;
+        output.erase(0, bytesSent);
+    }
+    pollfd &pfd = getPollByFd(client.getFd());
+    if (output.empty())
+        pfd.events &= ~POLLOUT; // // disable POLLOUT
+    else
+        pfd.events |= POLLOUT;
 }

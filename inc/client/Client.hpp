@@ -11,6 +11,9 @@
 #include <functional>
 #include <algorithm>
 
+#define MAX_READBUF 8192
+#define MAX_WRITEBUF 1024 * 1024 // 1 MB
+
 class Channel;
 
 class Client
@@ -29,7 +32,8 @@ private:
 
     std::vector<Channel *> _joinedChannels;
 
-    std::string _buffer;
+    std::string _readBuffer;
+    std::string _writeBuffer;
 
 public:
     Client();
@@ -50,7 +54,8 @@ public:
     std::vector<Channel *> &getChannels();
     std::string getPrefix() const;
 
-    std::string getBuffer();
+    std::string getReadBuffer();
+    std::string &getWriteBuffer();
     bool hasNick() const;
     bool hasUser() const;
     bool hasPass() const;
@@ -63,8 +68,11 @@ public:
     void setHasPass(bool flag);
     void setHasNick(bool flag);
     void setHasUser(bool flag);
-    void setBuffer(const std::string &buffer);
-    void appendToBuffer(const std::string &data);
+
+    void setReadBuffer(const std::string &buffer);
+    void appendToReadBuffer(const std::string &data);
+    void setWriteBuffer(const std::string &buffer);
+    void appendToWriteBuffer(const std::string &data);
 
     bool canRegister();
     // void sendMessage(const std::string &msg) const;

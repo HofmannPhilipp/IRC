@@ -77,11 +77,11 @@ void Server::run()
                 throw ServerException("Listening socket error");
         }
 
-        for (size_t i = _polls.size() - 1; i >= 1; i--)
+        for (int i = (int)_polls.size() - 1; i >= 1; --i)
         {
             if (!server_running)
                 break;
-            if (_polls[i].revents & (POLLIN | POLLHUP | POLLERR | POLLNVAL))
+            if (_polls[i].revents & (POLLIN | POLLHUP | POLLERR | POLLNVAL | POLLOUT))
             {
                 Client *client = _state.getClientByFd(_polls[i].fd);
                 if (!client || (_polls[i].revents & POLLNVAL))
@@ -90,6 +90,9 @@ void Server::run()
                     _polls.erase(_polls.begin() + i);
                     continue;
                 }
+
+                if (_polls[i].revents & POLLOUT)
+                    flushClient(*client);
                 std::string rawData;
                 if ((_polls[i].revents & (POLLERR | POLLHUP)) && !(_polls[i].revents & POLLIN))
                 {
@@ -107,17 +110,17 @@ void Server::run()
                 }
                 catch (const ServerException &e)
                 {
-                    std::cerr << e.what() << std::endl;
+                    std::cerr << Color::RED << e.what() << Color::RESET << std::endl;
                     disconnectClient(*client);
                 }
                 catch (const std::overflow_error &e)
                 {
-                    std::cerr << e.what() << '\n';
+                    std::cerr << Color::RED << e.what() << Color::RESET << '\n';
                     disconnectClient(*client);
                 }
                 catch (const IrcMsg::IrcMsgException &e)
                 {
-                    std::cerr << e.what() << std::endl;
+                    std::cerr << Color::YELLOW << e.what() << Color::RESET << std::endl;
                 }
             }
         }
@@ -128,19 +131,17 @@ void Server::run()
 void Server::processData(Client &client, std::string &rawData)
 {
 
-    client.appendToBuffer(rawData);
-    std::string buffer = client.getBuffer();
+    client.appendToReadBuffer(rawData);
+    std::string buffer = client.getReadBuffer();
     size_t pos;
     while ((pos = buffer.find("\r\n")) != std::string::npos)
     {
         std::string line = buffer.substr(0, pos + 2);
         buffer.erase(0, pos + 2);
-        client.setBuffer(buffer);
-        // if (line.size() > sizeof(char) * 512)
-        //     throw std::overflow_error("Buffer overflow: incoming data exceeds buffer size");
+        client.setReadBuffer(buffer);
         IrcMsg msg;
         msg.create(line);
-        std::cout << "[" << client.getFd() << "]{" << client.getUsername() << "} : " << line << "\n";
+        std::cout << Color::GREEN << "[" << client.getFd() << "]{" << client.getUsername() << "} : " << line << Color::RESET << "\n";
         handleRequest(client, msg);
     }
 }

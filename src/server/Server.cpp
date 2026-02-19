@@ -54,6 +54,16 @@ ServerState &Server::getServerState()
     return _state;
 }
 
+pollfd &Server::getPollByFd(int fd)
+{
+    for (size_t i = 0; i < _polls.size(); i++)
+    {
+        if (_polls[i].fd == fd)
+            return _polls[i];
+    }
+    throw ServerException("Pollfd with fd " + std::to_string(fd) + " not found");
+}
+
 void Server::init(int domain)
 {
     // Creating the server socket

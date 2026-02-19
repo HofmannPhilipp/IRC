@@ -24,6 +24,15 @@
 #include <exception>
 #include <algorithm>
 
+namespace Color
+{
+    const std::string RED = "\033[31m";
+    const std::string GREEN = "\033[32m";
+    const std::string YELLOW = "\033[33m";
+    const std::string BLUE = "\033[34m";
+    const std::string RESET = "\033[0m";
+}
+
 class Server
 {
 private:
@@ -47,13 +56,15 @@ public:
     ServerState &getServerState();
     std::string getServerName() const;
     std::string getPassword() const;
+    pollfd &getPollByFd(int fd);
 
-    void sendMsg(const Client &client, const std::string &msg) const;
-    void sendMsg(const Client &client, const char *msg) const;
-    void sendWelcomeMessage(const Client &client) const;
+    void sendMsg(Client &client, const std::string &msg);
+    // void sendMsg(const Client &client, const char *msg) const;
+    void sendWelcomeMessage(Client &client);
     void broadcastToChannel(const Client &client, const Channel &channel, const std::string &msg);
 
     bool receive(int fd, std::string &data);
+    void flushClient(Client &client);
     void processData(Client &client, std::string &rawData);
     void handleRequest(Client &client, const IrcMsg &msg);
 

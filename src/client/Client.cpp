@@ -44,7 +44,9 @@ Client::Client()
       _hasUser(false),
       _hasPass(false),
       _isRegistered(false),
-      _joinedChannels()
+      _joinedChannels(),
+      _readBuffer(""),
+      _writeBuffer("")
 {
 }
 
@@ -59,7 +61,8 @@ Client::Client(int fd)
       _hasPass(false),
       _isRegistered(false),
       _joinedChannels(),
-      _buffer("") {}
+      _readBuffer(""),
+      _writeBuffer("") {}
 
 Client::Client(int fd, const std::string &hostname)
     : _fd(fd),
@@ -72,7 +75,8 @@ Client::Client(int fd, const std::string &hostname)
       _hasPass(false),
       _isRegistered(false),
       _joinedChannels(),
-      _buffer("") {}
+      _readBuffer(""),
+      _writeBuffer("") {}
 
 Client::Client(const Client &other)
     : _fd(other._fd),
@@ -85,7 +89,8 @@ Client::Client(const Client &other)
       _hasPass(other._hasPass),
       _isRegistered(other._isRegistered),
       _joinedChannels(other._joinedChannels),
-      _buffer(other._buffer)
+      _readBuffer(other._readBuffer),
+      _writeBuffer(other._writeBuffer)
 
 {
 }
@@ -106,7 +111,8 @@ Client &Client::operator=(const Client &other)
     _hasPass = other._hasPass;
     _isRegistered = other._isRegistered;
     _joinedChannels = other._joinedChannels;
-    _buffer = other._buffer;
+    _readBuffer = other._readBuffer;
+    _writeBuffer = other._writeBuffer;
     return *this;
 }
 
@@ -203,9 +209,14 @@ std::string Client::getPrefix() const
     return _nickname + "!" + _username + "@" + _hostname;
 }
 
-std::string Client::getBuffer()
+std::string Client::getReadBuffer()
 {
-    return _buffer;
+    return _readBuffer;
+}
+
+std::string &Client::getWriteBuffer()
+{
+    return _writeBuffer;
 }
 
 bool Client::hasNick() const
@@ -267,18 +278,32 @@ void Client::setHasUser(bool flag)
     _hasUser = flag;
 }
 
-void Client::setBuffer(const std::string &buffer)
+void Client::setReadBuffer(const std::string &buffer)
 {
-    if (buffer.size() > sizeof(char) * 512)
+    if (buffer.size() > sizeof(char) * MAX_READBUF)
         throw std::overflow_error("Buffer overflow: incoming data exceeds buffer size");
-    _buffer = buffer;
+    _readBuffer = buffer;
 }
 
-void Client::appendToBuffer(const std::string &data)
+void Client::setWriteBuffer(const std::string &buffer)
 {
-    if (_buffer.size() + data.size() > sizeof(char) * 512)
+    if (buffer.size() > sizeof(char) * MAX_WRITEBUF)
+        throw std::overflow_error("Buffer overflow: output data exceeds buffer size");
+    _writeBuffer = buffer;
+}
+
+void Client::appendToReadBuffer(const std::string &data)
+{
+    if (_readBuffer.size() + data.size() > sizeof(char) * MAX_READBUF)
         throw std::overflow_error("Buffer overflow: incoming data exceeds buffer size");
-    _buffer += data;
+    _readBuffer += data;
+}
+
+void Client::appendToWriteBuffer(const std::string &data)
+{
+    if (_writeBuffer.size() + data.size() > sizeof(char) * MAX_WRITEBUF)
+        throw std::overflow_error("Buffer overflow: output data exceeds buffer size");
+    _writeBuffer += data;
 }
 
 bool Client::canRegister()
