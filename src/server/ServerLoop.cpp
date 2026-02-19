@@ -35,6 +35,13 @@ void Server::disconnectClient(Client &client)
     if (poll_it != _polls.end())
         _polls.erase(poll_it);
 
+    for (Channel *chan : client.getChannels())
+    {
+        chan->removeMember(client);
+        chan->removeOperator(client);
+        if (chan->getMembers().empty())
+            _state._channels.erase(chan->getName());
+    }
     if (_state._clients.erase(client_fd) == 0)
         std::cerr << "Warning: FD " << client_fd << " was already gone from Map." << std::endl;
     else
