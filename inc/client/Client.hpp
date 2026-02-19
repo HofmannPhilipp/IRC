@@ -61,6 +61,7 @@ public:
     bool hasPass() const;
 
     void joinChannel(Channel *channel);
+    void leaveChannel(Channel *channel);
 
     void setNickname(const std::string &nick);
     void setUsername(const std::string &name);

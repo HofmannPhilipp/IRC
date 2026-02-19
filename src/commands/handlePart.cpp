@@ -50,7 +50,7 @@ void handlePart(Client &client, Server &server, const IrcMsg &msg)
             currChannel->removeOperator(client);
 
         currChannel->removeMember(client);
-
+        client.leaveChannel(currChannel);
         if (currChannel->getMembers().empty())
             state.removeChannel(*currChannel);
     }

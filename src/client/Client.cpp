@@ -246,6 +246,17 @@ void Client::joinChannel(Channel *channel)
     _joinedChannels.push_back(channel);
 }
 
+void Client::leaveChannel(Channel *channel)
+{
+    for (auto it = _joinedChannels.begin(); it != _joinedChannels.end(); ++it)
+    {
+        if ((*it)->getName() == channel->getName())
+        {
+            _joinedChannels.erase(it);
+            return;
+        }
+    }
+}
 void Client::setNickname(const std::string &nick)
 {
     if (!checkNickname(nick))
