@@ -22,7 +22,7 @@ void handlePass(Client &client, Server &server, const IrcMsg &msg)
         // 464 ERR_PASSWDMISMATCH
         server.sendMsg(client, ":" + server.getServerName() + " 464 * :Password incorrect\r\n");
         server.sendMsg(client, "ERROR :Closing Link: Access denied (incorrect password)\r\n");
-        server.disconnectClient(client);
+        client.markAsDead();
         return;
     }
 

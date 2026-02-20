@@ -74,6 +74,7 @@ void handleKick(Client &client, Server &server, const IrcMsg &msg)
     server.broadcastToChannel(client, *currChannel, kickMsg);
     server.sendMsg(client, kickMsg);
 
+    // TODO: gleiche wie in part
     currChannel->removeMember(*target);
 
     if (currChannel->getMembers().empty())

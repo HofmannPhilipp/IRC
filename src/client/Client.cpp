@@ -44,6 +44,7 @@ Client::Client()
       _hasUser(false),
       _hasPass(false),
       _isRegistered(false),
+      _isDead(false),
       _joinedChannels(),
       _readBuffer(""),
       _writeBuffer("")
@@ -60,9 +61,12 @@ Client::Client(int fd)
       _hasUser(false),
       _hasPass(false),
       _isRegistered(false),
+      _isDead(false),
       _joinedChannels(),
       _readBuffer(""),
-      _writeBuffer("") {}
+      _writeBuffer("")
+{
+}
 
 Client::Client(int fd, const std::string &hostname)
     : _fd(fd),
@@ -74,9 +78,12 @@ Client::Client(int fd, const std::string &hostname)
       _hasUser(false),
       _hasPass(false),
       _isRegistered(false),
+      _isDead(false),
       _joinedChannels(),
       _readBuffer(""),
-      _writeBuffer("") {}
+      _writeBuffer("")
+{
+}
 
 Client::Client(const Client &other)
     : _fd(other._fd),
@@ -88,6 +95,7 @@ Client::Client(const Client &other)
       _hasUser(other._hasUser),
       _hasPass(other._hasPass),
       _isRegistered(other._isRegistered),
+      _isDead(other._isDead),
       _joinedChannels(other._joinedChannels),
       _readBuffer(other._readBuffer),
       _writeBuffer(other._writeBuffer)
@@ -110,6 +118,7 @@ Client &Client::operator=(const Client &other)
     _hasUser = other._hasUser;
     _hasPass = other._hasPass;
     _isRegistered = other._isRegistered;
+    _isDead = other._isDead;
     _joinedChannels = other._joinedChannels;
     _readBuffer = other._readBuffer;
     _writeBuffer = other._writeBuffer;
@@ -209,7 +218,7 @@ std::string Client::getPrefix() const
     return _nickname + "!" + _username + "@" + _hostname;
 }
 
-std::string Client::getReadBuffer()
+std::string &Client::getReadBuffer()
 {
     return _readBuffer;
 }
@@ -232,6 +241,16 @@ bool Client::hasUser() const
 bool Client::hasPass() const
 {
     return _hasPass;
+}
+
+bool Client::isDead() const
+{
+    return _isDead;
+}
+
+void Client::markAsDead()
+{
+    _isDead = true;
 }
 
 void Client::joinChannel(Channel *channel)

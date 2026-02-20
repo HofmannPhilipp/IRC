@@ -16,5 +16,5 @@ void handleQuit(Client &client, Server &server, const IrcMsg &msg)
 
     reply = "ERROR :Closing Link: " + client.getHostname() + " (Quit: " + reason + ")\r\n";
     server.sendMsg(client, reply);
-    server.disconnectClient(client);
+    client.markAsDead();
 }

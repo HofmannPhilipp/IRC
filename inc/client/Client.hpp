@@ -29,8 +29,10 @@ private:
     bool _hasUser;
     bool _hasPass;
     bool _isRegistered;
+    bool _isDead;
 
-    std::vector<Channel *> _joinedChannels;
+    std::vector<Channel *>
+        _joinedChannels;
 
     std::string _readBuffer;
     std::string _writeBuffer;
@@ -50,11 +52,12 @@ public:
     std::string getUsername() const;
     std::string getRealname() const;
     std::string getHostname() const;
+    bool isDead() const;
     bool getIsRegistered() const;
     std::vector<Channel *> &getChannels();
     std::string getPrefix() const;
 
-    std::string getReadBuffer();
+    std::string &getReadBuffer();
     std::string &getWriteBuffer();
     bool hasNick() const;
     bool hasUser() const;
@@ -69,6 +72,7 @@ public:
     void setHasPass(bool flag);
     void setHasNick(bool flag);
     void setHasUser(bool flag);
+    void markAsDead();
 
     void setReadBuffer(const std::string &buffer);
     void appendToReadBuffer(const std::string &data);

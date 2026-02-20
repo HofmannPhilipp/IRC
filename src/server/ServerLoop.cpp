@@ -21,12 +21,10 @@ void Server::connectClient(void)
     std::cout << "new client connected: " << hostname << " (FD: " << client_fd << ")" << std::endl;
 }
 
-// TODO: cleaner machen
 void Server::disconnectClient(Client &client)
 {
     int client_fd = client.getFd();
     std::cout << "Disconnected: " << client.getNickname() << " (FD: " << client_fd << ")" << std::endl;
-    // std::cout << client << std::endl;
 
     auto poll_it = std::find_if(_polls.begin(), _polls.end(),
                                 [client_fd](pollfd p)
@@ -43,7 +41,7 @@ void Server::disconnectClient(Client &client)
             _state._channels.erase(chan->getName());
     }
     if (_state._clients.erase(client_fd) == 0)
-        std::cerr << "Warning: FD " << client_fd << " was already gone from Map." << std::endl;
+        std::cerr << Color::RED << "Warning: FD " << client_fd << " was already erased from Map." << Color::RESET << std::endl;
     else
     {
         std::cout << "(FD: " << client_fd << ") closed" << std::endl;
@@ -107,6 +105,11 @@ void Server::run()
                         continue;
                     }
                     processData(*client, rawData);
+                    if (client->isDead())
+                    {
+                        disconnectClient(*client);
+                        continue;
+                    }
                 }
                 catch (const ServerException &e)
                 {
@@ -132,17 +135,18 @@ void Server::processData(Client &client, std::string &rawData)
 {
 
     client.appendToReadBuffer(rawData);
-    std::string buffer = client.getReadBuffer();
+    std::string &buffer = client.getReadBuffer();
     size_t pos;
     while ((pos = buffer.find("\r\n")) != std::string::npos)
     {
         std::string line = buffer.substr(0, pos + 2);
         buffer.erase(0, pos + 2);
-        client.setReadBuffer(buffer);
         IrcMsg msg;
         msg.create(line);
         std::cout << Color::GREEN << "[" << client.getFd() << "]{" << client.getUsername() << "} : " << line << Color::RESET << "\n";
         handleRequest(client, msg);
+        if (client.isDead())
+            return;
     }
 }
 
