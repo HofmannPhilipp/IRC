@@ -55,7 +55,7 @@ void Server::run()
     while (server_running)
     {
         // setting poll for clients
-        int ret = poll(_polls.data(), _polls.size(), 1000); // after 1 sec wake up
+        int ret = poll(_polls.data(), _polls.size(), -1);
 
         if (ret < 0)
         {
