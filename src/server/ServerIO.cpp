@@ -50,7 +50,7 @@ void Server::sendWelcomeMessage(Client &client)
     sendMsg(client, ":" + _serverName + " 003 " + nick + " :This server was created " + _creationDate + "\r\n");
 
     // 004: MyInfo (Servername, Version, UserModes, ChannelModes)
-    sendMsg(client, ":" + _serverName + " 004 " + nick + " " + _serverName + " 1.0 o i,k,l,t,o\r\n");
+    sendMsg(client, ":" + _serverName + " 004 " + nick + " " + _serverName + " 1.0 ? i,k,l,t,o\r\n");
 
     // 005: ISUPPORT (Features supported by the server)
     sendMsg(client, ":" + _serverName + " 005 " + nick + " CHANMODES=,k,l,it PREFIX=(o)@ :are supported by this server\r\n");
