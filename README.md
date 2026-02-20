@@ -114,6 +114,7 @@ assistance, specifically for:
 -   Understanding server architecture and design strategies
 -   Clarifying networking concepts and poll()-based event loops
 -   Improving and refining error messages for IRC commands
+-   Creating this README.md
 
 AI was used as a learning aid and reference tool.
 

@@ -7,8 +7,8 @@ void handleMode(Client &client, Server &server, const IrcMsg &msg)
 
     if (params.size() < 2)
     {
-        std::string reply = ":" + server.getServerName() + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
-        server.sendMsg(client, reply);
+        // std::string reply = ":" + server.getServerName() + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
+        // server.sendMsg(client, reply);
         return;
     }
 
